@@ -1,0 +1,57 @@
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.fieldGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-4);
+}
+
+.field:last-of-type {
+  margin-bottom: var(--space-4);
+}
+
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  font-weight: 400;
+  color: var(--color-text);
+}
+
+.hint {
+  font-weight: 500;
+  color: var(--color-text-faint);
+  margin-left: 0.4rem;
+}
+
+.checkboxField {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+@media (max-width: 1024px) {
+  .grid,
+  .fieldGrid {
+    grid-template-columns: 1fr;
+  }
+}

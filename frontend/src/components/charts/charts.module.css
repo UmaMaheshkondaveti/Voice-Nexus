@@ -1,0 +1,187 @@
+.chartWrap {
+  width: 100%;
+  position: relative;
+}
+
+/* Donut */
+.donutWrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.donutCenter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.donutCenterValue {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.donutCenterLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 200px;
+  flex: 1;
+}
+
+.legendItem,
+.legendItemClickable {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--text-sm);
+  padding: 0.3rem 0.4rem;
+  border-radius: var(--radius-sm);
+}
+
+.legendItemClickable {
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease);
+}
+
+.legendItemClickable:hover {
+  background: var(--color-bg-subtle);
+}
+
+.legendDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendLabel {
+  flex: 1;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.legendValue {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Horizontal bar list */
+.barList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.barRow,
+.barRowClickable {
+  display: grid;
+  grid-template-columns: minmax(90px, 150px) 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.2rem;
+}
+
+.barRowClickable {
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease);
+}
+
+.barRowClickable:hover {
+  background: var(--color-bg-subtle);
+}
+
+.barLabel {
+  color: var(--color-text);
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.barValue {
+  min-width: 2.5ch;
+}
+
+.barTrack {
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-full);
+  height: 9px;
+  overflow: hidden;
+}
+
+.barFill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--duration-slow) var(--ease);
+}
+
+.barValue {
+  text-align: right;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* Radial gauge */
+.gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  position: relative;
+}
+
+.gaugeSvg {
+  overflow: visible;
+}
+
+.gaugeArc {
+  transition: stroke-dashoffset var(--duration-slow) var(--ease);
+}
+
+.gaugeCenter {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(100% - 1.6rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gaugeValue {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.gaugeLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-align: center;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .barRow,
+  .barRowClickable {
+    grid-template-columns: 90px 1fr 46px;
+  }
+}

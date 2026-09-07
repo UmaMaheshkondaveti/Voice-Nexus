@@ -1,0 +1,30 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.select {
+  appearance: none;
+  padding-right: 2rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.sm .select {
+  font-size: var(--text-sm);
+  padding: 0.4rem 1.8rem 0.4rem 0.7rem;
+}
+
+.md .select {
+  font-size: var(--text-base);
+  padding: 0.55rem 2rem 0.55rem 0.8rem;
+}
+
+.chevron {
+  position: absolute;
+  right: 0.65rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}

@@ -1,0 +1,420 @@
+/*
+  Upgraded styles for the pre-existing single-purpose components
+  (CallPage, AgentHandoffPage, EscalationCard, TranscriptView, MicButton, etc.)
+  Kept as global classes (not CSS Modules) since these components predate the
+  design system and are restyled in place to preserve their exact markup/behavior.
+*/
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-6);
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: var(--text-lg);
+}
+
+.banner {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.banner--error {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-fg);
+}
+
+.banner--warn {
+  background: var(--color-warn-bg);
+  color: var(--color-warn-fg);
+}
+
+.banner--info {
+  background: var(--color-info-bg);
+  color: var(--color-info-fg);
+}
+
+.call-start {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 380px;
+}
+
+.call-active__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+/* Status badges (CallStatusBadge, RecentCallsTable rows) */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.status-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.status-badge--connecting {
+  background: var(--color-warn-bg);
+  color: var(--color-warn-fg);
+}
+
+.status-badge--in-progress {
+  background: var(--color-info-bg);
+  color: var(--color-info-fg);
+}
+
+.status-badge--escalated {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-fg);
+}
+
+.status-badge--ended {
+  background: var(--color-success-bg);
+  color: var(--color-success-fg);
+}
+
+.transcript {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  max-height: 420px;
+  overflow-y: auto;
+  background: var(--color-bg-subtle);
+}
+
+.transcript__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.transcript__toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 500;
+}
+
+.transcript__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.transcript__turn {
+  animation: page-enter var(--duration-base) var(--ease);
+}
+
+.transcript__turn--caller {
+  align-self: flex-end;
+  max-width: 80%;
+  margin-left: auto;
+}
+
+.transcript__turn--assistant {
+  align-self: flex-start;
+  max-width: 80%;
+}
+
+.transcript__bubble {
+  padding: 0.65rem 0.95rem;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  font-size: var(--text-md);
+  box-shadow: var(--shadow-xs);
+}
+
+.transcript__turn--caller .transcript__bubble {
+  background: var(--color-primary-500);
+  color: white;
+  border-color: var(--color-primary-500);
+}
+
+.transcript__debug {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  background: var(--color-gray-100);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.65rem;
+}
+
+.transcript__debug pre {
+  margin: 0.3rem 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.call-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.mic-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  background: var(--color-primary-500);
+  box-shadow: var(--shadow-md);
+  font-size: var(--text-sm);
+  transition: transform var(--duration-fast) var(--ease), background var(--duration-fast) var(--ease);
+}
+
+.mic-button:hover:not(:disabled) {
+  background: var(--color-primary-600);
+  transform: scale(1.03);
+}
+
+.mic-button--listening {
+  background: var(--color-danger);
+  animation: pulse 1.4s infinite;
+}
+
+.mic-button__icon {
+  font-size: 1.8rem;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgba(220, 38, 38, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+  }
+}
+
+.text-fallback {
+  display: flex;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 480px;
+}
+
+.text-fallback input {
+  flex: 1;
+}
+
+.call-active__footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Escalation cards */
+.escalation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-4);
+}
+
+.escalation-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-danger);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-5);
+  transition: box-shadow var(--duration-base) var(--ease), transform var(--duration-base) var(--ease);
+}
+
+.escalation-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.escalation-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--space-3);
+}
+
+.escalation-card__header h3 {
+  margin: 0;
+  font-size: var(--text-md);
+}
+
+.escalation-card__time {
+  font-size: var(--text-xs);
+  color: var(--color-text-faint);
+}
+
+.escalation-card__facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  margin: 0 0 var(--space-3);
+}
+
+.escalation-card__facts dt {
+  color: var(--color-text-faint);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.escalation-card__facts dd {
+  margin: 0;
+  font-weight: 650;
+}
+
+.escalation-card__summary {
+  font-size: var(--text-md);
+  color: var(--color-text);
+}
+
+.escalation-card h4 {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-text-faint);
+  margin: var(--space-3) 0 0.3rem;
+}
+
+.escalation-card ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* Generic tables (RecentCallsTable and any un-migrated table markup) */
+.table-wrap {
+  overflow-x: auto;
+}
+
+.calls-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.calls-table th,
+.calls-table td {
+  text-align: left;
+  padding: 0.6rem 0.7rem;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.calls-table th {
+  color: var(--color-text-faint);
+  font-weight: 700;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.calls-table tbody tr {
+  transition: background var(--duration-fast) var(--ease);
+}
+
+.calls-table tbody tr:hover {
+  background: var(--color-bg-subtle);
+}
+
+/* Legacy metric grid / bar chart (superseded on the dashboard, still available) */
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-4);
+}
+
+.metric-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-4) var(--space-5);
+}
+
+.metric-card__label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.metric-card__value {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.bar-chart__row {
+  display: grid;
+  grid-template-columns: 110px 1fr 34px;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.bar-chart__track {
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-full);
+  height: 10px;
+  overflow: hidden;
+}
+
+.bar-chart__fill {
+  background: var(--color-primary-500);
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--duration-slow) var(--ease);
+}
+
+@media (max-width: 640px) {
+  .calls-table th:nth-child(n + 4),
+  .calls-table td:nth-child(n + 4) {
+    display: none;
+  }
+
+  .mic-button {
+    width: 104px;
+    height: 104px;
+  }
+}

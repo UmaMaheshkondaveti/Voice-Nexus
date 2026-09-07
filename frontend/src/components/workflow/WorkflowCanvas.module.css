@@ -1,0 +1,101 @@
+.scroller {
+  overflow: auto;
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+
+.canvas {
+  position: relative;
+}
+
+.edges {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.edgeLabel {
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.node {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-left: 4px solid var(--node-color, var(--color-primary-500));
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: box-shadow var(--duration-fast) var(--ease), transform var(--duration-fast) var(--ease),
+    border-color var(--duration-fast) var(--ease);
+}
+
+.node:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.selected {
+  border-color: var(--color-primary-400);
+  box-shadow: 0 0 0 3px var(--color-primary-100);
+}
+
+.active {
+  animation: node-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes node-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(52, 87, 213, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(52, 87, 213, 0);
+  }
+}
+
+.nodeIcon {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--node-color, var(--color-primary-500)) 15%, white);
+  color: var(--node-color, var(--color-primary-500));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nodeText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.1rem;
+}
+
+.nodeLabel {
+  font-size: var(--text-sm);
+  font-weight: 650;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nodeType {
+  font-size: 0.68rem;
+  color: var(--color-text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}

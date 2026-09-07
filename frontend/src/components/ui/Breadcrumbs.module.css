@@ -1,0 +1,38 @@
+.nav {
+  font-size: var(--text-sm);
+}
+
+.list {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  flex-wrap: wrap;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+}
+
+.link {
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.link:hover {
+  color: var(--color-primary-600);
+  text-decoration: underline;
+}
+
+.current {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.separator {
+  display: flex;
+  color: var(--color-text-faint);
+}

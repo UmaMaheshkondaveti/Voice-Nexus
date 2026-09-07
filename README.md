@@ -63,11 +63,11 @@ Open `http://localhost:5173` in Chrome or Edge.
 
 | Name | Phone | KBA question | KBA answer |
 |---|---|---|---|
-| Priya Nair | +14085550101 | What city were you born in? | Chicago |
-| Marcus Webb | +14085550102 | What is the name of your first pet? | Rusty |
-| Dana Ferreira | +14085550103 | What is your mother's maiden name? | O'Connor |
-| Leo Tran | +14085550104 | What was the model of your first car? | Civic |
-| Ingrid Solberg | +14085550105 | What street did you grow up on? | Elm |
+| Eddard Stark | +14085550101 | What city were you born in? | Chicago |
+| Cersi Lannister | +14085550102 | What is the name of your first pet? | Rusty |
+| Sansa Stark | +14085550103 | What is your mother's maiden name? | O'Connor |
+| Margaery Tyrell | +14085550104 | What was the model of your first car? | Civic |
+| Jon Snow | +14085550105 | What street did you grow up on? | Elm |
 
 (See `backend/src/data/accounts.ts` for full account details.)
 

@@ -68,8 +68,15 @@ svg {
 }
 
 /* Baseline styling for raw elements not yet migrated to <Button>/<Select> —
-   keeps every page consistent even before every screen adopts the primitives. */
-button {
+   keeps every page consistent even before every screen adopts the primitives.
+   Wrapped in :where() so this carries ZERO specificity: any component's own
+   class-based styling (e.g. a custom `.row:hover`) always wins, on every
+   pseudo-state, without needing to out-specificity-hack it. Without :where(),
+   `button:hover:not(:disabled)` (element + 2 pseudo-classes) is actually MORE
+   specific than a plain `.row:hover` and silently overrides it — that's what
+   caused list rows styled as bare <button>s to flash primary-blue with
+   unreadable muted text on hover instead of their intended subtle highlight. */
+:where(button) {
   font-family: inherit;
   font-size: var(--text-base);
   font-weight: 600;
@@ -82,15 +89,15 @@ button {
   transition: background var(--duration-fast) var(--ease), transform var(--duration-fast) var(--ease);
 }
 
-button:hover:not(:disabled) {
+:where(button:hover:not(:disabled)) {
   background: var(--color-primary-600);
 }
 
-button:active:not(:disabled) {
+:where(button:active:not(:disabled)) {
   transform: translateY(1px);
 }
 
-button:disabled {
+:where(button:disabled) {
   opacity: 0.5;
   cursor: not-allowed;
 }

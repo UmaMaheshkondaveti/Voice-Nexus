@@ -78,6 +78,8 @@ export interface CallSession {
   transcript: Turn[];
   transactionsCompleted: string[];
   escalation?: EscalationPayload;
+  /** Notes a human agent recorded while handling this call after escalation. */
+  agentNotes?: string;
 }
 
 export interface CallSummary {
@@ -90,6 +92,9 @@ export interface CallSummary {
   endedAt?: string;
   durationSeconds?: number;
   escalated: boolean;
+  identityVerified: boolean;
+  verificationLevel: VerificationLevel;
+  escalationReason?: string;
 }
 
 export interface Metrics {

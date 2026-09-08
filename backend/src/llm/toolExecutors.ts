@@ -36,10 +36,9 @@ export async function executeTool(
 }
 
 function verifyIdentity(input: Record<string, unknown>, session: InternalCallSession): ToolResult {
-  const phoneNumber = String(input.phoneNumber ?? '');
   const kbaAnswer = typeof input.kbaAnswer === 'string' ? input.kbaAnswer : undefined;
 
-  const account = findAccountByPhone(phoneNumber);
+  const account = findAccountByPhone(session.phoneNumber);
   if (!account) {
     return { verified: false, level: 'none', reason: 'no_account_match' };
   }

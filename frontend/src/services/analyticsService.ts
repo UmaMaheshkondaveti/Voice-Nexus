@@ -1,7 +1,6 @@
 import type { DateRangeValue } from '../components/ui/DateRangeFilter';
 import type {
   AIPerformance,
-  CallFilters,
   CallVolumeData,
   CallVolumePoint,
   EnrichedCall,
@@ -410,75 +409,6 @@ function buildTranscript(intent: IntentKey): EnrichedCall['transcriptSnippet'] {
   ];
 }
 
-function generateCall(seed: string): EnrichedCall {
-  const rng = mulberry32(hashString(seed));
-  const intent = INTENT_KEYS[Math.floor(rng() * INTENT_KEYS.length)];
-  const escalated = rng() < 0.22;
-  const resolution: EnrichedCall['resolution'] = escalated
-    ? rng() < 0.5
-      ? 'escalated'
-      : 'partial'
-    : rng() < 0.9
-      ? 'resolved'
-      : 'failed';
-  const minutesAgo = Math.floor(rng() * 60 * 24 * 14);
-  const startedAt = new Date(Date.now() - minutesAgo * 60_000).toISOString();
-  const durationSeconds = Math.floor(60 + rng() * 420);
-  const authStatus: AuthStatus = AUTH_STATUSES[Math.floor(rng() * AUTH_STATUSES.length)];
-  const escalationReasonKey = escalated
-    ? Object.keys(ESCALATION_REASON_TEMPLATES)[Math.floor(rng() * Object.keys(ESCALATION_REASON_TEMPLATES).length)]
-    : undefined;
-
-  const base: Omit<EnrichedCall, 'timeline' | 'transcriptSnippet'> = {
-    id: seed,
-    callerName: rng() < 0.85 ? CALLER_NAMES[Math.floor(rng() * CALLER_NAMES.length)] : undefined,
-    phoneNumber: `+1 ${Math.floor(200 + rng() * 700)}-555-${String(Math.floor(rng() * 10000)).padStart(4, '0')}`,
-    startedAt,
-    durationSeconds,
-    intent,
-    intentConfidence: Math.round((0.65 + rng() * 0.34) * 100) / 100,
-    authStatus,
-    status: 'ended',
-    resolution,
-    escalated,
-    escalationReason: escalationReasonKey,
-    destinationQueue: escalated ? ESCALATION_DESTINATIONS[Math.floor(rng() * ESCALATION_DESTINATIONS.length)] : undefined,
-    transferredToAgent: escalated,
-    csat: rng() < 0.7 ? Math.round((2.5 + rng() * 2.5) * 10) / 10 : undefined,
-    workflowStage: escalated ? 'wrap-up' : WORKFLOW_STAGES[WORKFLOW_STAGES.length - 1],
-  };
-
-  return { ...base, timeline: buildTimeline(rng, base), transcriptSnippet: buildTranscript(intent) };
-}
-
-let callPool: EnrichedCall[] | null = null;
-
-function ensureCallPool(): EnrichedCall[] {
-  if (!callPool) {
-    callPool = Array.from({ length: 180 }, (_, i) => generateCall(`call-${i}`));
-  }
-  return callPool;
-}
-
-export async function getCalls(filters: CallFilters = {}): Promise<EnrichedCall[]> {
-  await delay();
-  let rows = ensureCallPool();
-
-  if (filters.status) rows = rows.filter((c) => c.status === filters.status);
-  if (filters.intent) rows = rows.filter((c) => c.intent === filters.intent);
-  if (filters.resolution) rows = rows.filter((c) => c.resolution === filters.resolution);
-  if (filters.escalationReason) rows = rows.filter((c) => c.escalationReason === filters.escalationReason);
-  if (filters.escalated) rows = rows.filter((c) => c.escalated === (filters.escalated === 'true'));
-  if (filters.search) {
-    const q = filters.search.toLowerCase();
-    rows = rows.filter(
-      (c) => c.callerName?.toLowerCase().includes(q) || c.phoneNumber.toLowerCase().includes(q) || c.id.includes(q),
-    );
-  }
-
-  return [...rows].sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
-}
-
 export interface CustomerExperienceData {
   csat: MetricDatum;
   resolutionRate: MetricDatum;
@@ -524,11 +454,6 @@ export async function getCostPerformance(range: DateRangeValue): Promise<CostPer
     estimatedSavings: metric(rng, 3400 * sf * 4.35, 0.1),
     transferVolumeTrend: trendSeries(rng, 610 * sf, 12, 0.2).map((v, i) => ({ period: `P${i + 1}`, transfers: Math.round(v) })),
   };
-}
-
-export async function getCallById(id: string): Promise<EnrichedCall | null> {
-  await delay(120);
-  return ensureCallPool().find((c) => c.id === id) ?? null;
 }
 
 /** Builds a drawer-ready detail record for a Live Operations row (an in-progress call, not yet in the completed call pool). */

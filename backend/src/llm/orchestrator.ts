@@ -8,6 +8,18 @@ import { makeTurn, type InternalCallSession } from '../store/callStore.js';
 const MAX_TOOL_ITERATIONS = 6;
 const FALLBACK_MESSAGE = "I'm sorry, I'm having trouble completing that right now — let me connect you with a live agent who can help.";
 
+/**
+ * The model occasionally appends bracketed stage-direction/meta-commentary
+ * artifacts (e.g. "[Awaiting response][Listening for the caller's answer]")
+ * after its spoken reply. Strip those so they're never spoken or shown.
+ */
+function sanitizeSpokenText(text: string): string {
+  return text
+    .replace(/\[[^\]]*\]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function autoEscalate(session: InternalCallSession, reason: string, summary: string): void {
   session.status = 'escalated';
   session.endedAt = new Date().toISOString();
@@ -50,9 +62,19 @@ export async function runTurn(session: InternalCallSession, callerText: string |
 
       const toolCalls = message.tool_calls ?? [];
       if (toolCalls.length === 0) {
-        finalText = (message.content ?? '').trim();
+        finalText = sanitizeSpokenText(message.content ?? '');
         break;
       }
+
+      // Set when verify_identity is called with no answer and comes back
+      // asking a KBA question the caller hasn't had a chance to respond to
+      // yet. The caller can only supply a real answer in a *future* turn, so
+      // letting the model keep going this same turn risks it fabricating a
+      // guessed answer (observed: guessing a Game-of-Thrones-themed KBA
+      // answer from an account holder's name) instead of waiting to hear the
+      // real one. When this happens we ask the question ourselves and end
+      // the turn immediately, rather than asking the model to continue.
+      let pendingKbaQuestion: string | undefined;
 
       for (const call of toolCalls) {
         const input = JSON.parse(call.function.arguments) as Record<string, unknown>;
@@ -65,6 +87,20 @@ export async function runTurn(session: InternalCallSession, callerText: string |
           }),
         );
         session.llmHistory.push({ role: 'tool', tool_call_id: call.id, content: JSON.stringify(result) });
+
+        if (
+          call.function.name === 'verify_identity' &&
+          input.kbaAnswer == null &&
+          typeof result.kbaQuestion === 'string'
+        ) {
+          pendingKbaQuestion = result.kbaQuestion;
+        }
+      }
+
+      if (pendingKbaQuestion) {
+        finalText = `To keep your account secure, could you tell me: ${pendingKbaQuestion}`;
+        session.llmHistory.push({ role: 'assistant', content: finalText });
+        break;
       }
     }
   } catch (error) {

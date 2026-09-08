@@ -4,10 +4,14 @@ import { createSession, getSession, listSessions, toPublicSession } from '../sto
 import { findAccountByPhone } from '../data/accounts.js';
 import { runTurn } from '../llm/orchestrator.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
+import { requireRole } from '../middleware/auth.js';
 
 export const callsRouter = Router();
 
-callsRouter.get('/', (_req, res) => {
+// Call history (list + detail) is an internal agent/operations/admin view. Starting a call,
+// speaking a turn, and ending it are the *customer's* side of the conversation (driven by the
+// Call Simulator) and stay unauthenticated, same as a real inbound call never needs a login.
+callsRouter.get('/', requireRole('agent', 'operations', 'admin'), (_req, res) => {
   const summaries: CallSummary[] = listSessions().map((s) => ({
     id: s.id,
     phoneNumber: s.phoneNumber,
@@ -18,6 +22,9 @@ callsRouter.get('/', (_req, res) => {
     endedAt: s.endedAt,
     durationSeconds: s.endedAt ? (Date.parse(s.endedAt) - Date.parse(s.startedAt)) / 1000 : undefined,
     escalated: !!s.escalation,
+    identityVerified: s.identityVerified,
+    verificationLevel: s.verificationLevel,
+    escalationReason: s.escalation?.reason,
   }));
   res.json({ calls: summaries });
 });
@@ -38,7 +45,7 @@ callsRouter.post(
   }),
 );
 
-callsRouter.get('/:id', (req, res) => {
+callsRouter.get('/:id', requireRole('agent', 'operations', 'admin'), (req, res) => {
   const session = getSession(req.params.id);
   if (!session) {
     res.status(404).json({ error: 'call_not_found' });

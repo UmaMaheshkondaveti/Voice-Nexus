@@ -5,14 +5,14 @@ A working demo of the VoiceNexus AI IVR concept from the PRD: talk to an AI cust
 Real SIP/PSTN telephony, a real billing/OSS/BSS system, a real ACD, and a real identity provider aren't available outside a live carrier environment, so those layers are simulated:
 
 - **Voice I/O** uses the browser's native Web Speech API (Chrome/Edge) — no external speech vendor.
-- **NLU/dialogue** is powered by the real Anthropic API (Claude), using tool calls to keep the agent grounded and goal-directed rather than freely hallucinating.
+- **NLU/dialogue** is powered by the real Groq API (`openai/gpt-oss-120b`), using tool calls to keep the agent grounded and goal-directed rather than freely hallucinating.
 - **Account/billing/scheduling data** is an in-memory mock store (`backend/src/data/`), reset on backend restart.
 - **Live-agent transfer** is simulated as the Agent Handoff dashboard page — no real call transfer occurs.
 
 ## Prerequisites
 
 - **Node.js 20+** and npm. This machine didn't have Node installed while building this project — install it from [nodejs.org](https://nodejs.org) (or `winget install OpenJS.NodeJS.LTS`) before running the steps below.
-- An **Anthropic API key** (`ANTHROPIC_API_KEY`).
+- A **Groq API key** (`GROQ_API_KEY`) — free tier at [console.groq.com](https://console.groq.com).
 - **Chrome or Edge** for real voice input/output (Web Speech API). Other browsers fall back to a text input.
 
 ## Setup
@@ -21,7 +21,7 @@ Real SIP/PSTN telephony, a real billing/OSS/BSS system, a real ACD, and a real i
 cd backend
 npm install
 Copy-Item .env.example .env
-# edit backend/.env and set ANTHROPIC_API_KEY
+# edit backend/.env and set GROQ_API_KEY
 
 cd ../frontend
 npm install
@@ -63,11 +63,11 @@ Open `http://localhost:5173` in Chrome or Edge.
 
 | Name | Phone | KBA question | KBA answer |
 |---|---|---|---|
-| Priya Nair | +14085550101 | What city were you born in? | Chicago |
-| Marcus Webb | +14085550102 | What is the name of your first pet? | Rusty |
-| Dana Ferreira | +14085550103 | What is your mother's maiden name? | O'Connor |
-| Leo Tran | +14085550104 | What was the model of your first car? | Civic |
-| Ingrid Solberg | +14085550105 | What street did you grow up on? | Elm |
+| Daniel Whitfield | +14085550101 | What city were you born in? | Chicago |
+| Renee Castillo | +14085550102 | What is the name of your first pet? | Rusty |
+| Monica Alvarez | +14085550103 | What is your mother's maiden name? | O'Connor |
+| Felicia Hartman | +14085550104 | What was the model of your first car? | Civic |
+| Owen Bennett | +14085550105 | What street did you grow up on? | Elm |
 
 (See `backend/src/data/accounts.ts` for full account details.)
 

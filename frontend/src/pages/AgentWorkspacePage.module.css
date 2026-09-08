@@ -1,0 +1,229 @@
+.layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.queue {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+  position: sticky;
+  top: var(--space-4);
+}
+
+.queueGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.queueGroupTitle {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-text-faint);
+}
+
+.queueEmpty {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.queueRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  text-align: left;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: var(--color-bg-subtle);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease), border-color var(--duration-fast) var(--ease);
+}
+
+.queueRow:hover {
+  background: var(--color-primary-50);
+}
+
+.queueRowActive {
+  background: var(--color-primary-50);
+  border-color: var(--color-primary-300);
+}
+
+.queueRowTop {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-weight: 650;
+  font-size: var(--text-sm);
+}
+
+.queueRowTime {
+  font-weight: 500;
+  color: var(--color-text-faint);
+  font-size: var(--text-xs);
+}
+
+.queueRowMeta {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.detailHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.callerName {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-xl);
+}
+
+.detailBadges {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.controls {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.transferWrap {
+  position: relative;
+}
+
+.transferMenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: var(--z-dropdown);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 190px;
+}
+
+.transferMenu button {
+  background: transparent;
+  color: var(--color-text);
+  font-weight: 500;
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--radius-sm);
+}
+
+.transferMenu button:hover:not(:disabled) {
+  background: var(--color-bg-subtle);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-5);
+}
+
+.card h4 {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-text-faint);
+}
+
+.summaryText {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-md);
+}
+
+.factList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.factList dt {
+  font-size: var(--text-xs);
+  color: var(--color-text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.factList dd {
+  margin: 0.15rem 0 0;
+  font-weight: 600;
+}
+
+.stepList {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.muted {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.notesBox {
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+  margin-bottom: var(--space-3);
+  font-family: inherit;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .queue {
+    position: static;
+    max-height: none;
+  }
+}

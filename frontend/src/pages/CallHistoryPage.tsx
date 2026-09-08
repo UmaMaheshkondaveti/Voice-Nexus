@@ -1,56 +1,70 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Download } from 'lucide-react';
+import { Search } from 'lucide-react';
+import type { CallSession, CallSummary, Intent } from '@shared/types';
+import { api } from '../api/client';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Card } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
 import { Select } from '../components/ui/Select';
-import { Badge } from '../components/ui/Badge';
+import { Badge, type BadgeTone } from '../components/ui/Badge';
 import { Table, type TableColumn } from '../components/ui/Table';
-import { CallDetailDrawer } from '../components/calls/CallDetailDrawer';
-import { getCalls } from '../services/analyticsService';
-import { INTENT_LABELS, type CallFilters, type EnrichedCall, type IntentKey } from '../types/analytics';
+import { CallSessionDrawer } from '../components/calls/CallSessionDrawer';
+import { escalationReasonLabel } from '../utils/escalation';
 import { formatDateTime, formatSeconds } from '../utils/format';
 import styles from './CallHistoryPage.module.css';
 
-const RESOLUTION_TONE = {
-  resolved: 'success',
-  partial: 'warn',
-  escalated: 'danger',
-  failed: 'danger',
-} as const;
+const INTENT_LABELS: Record<Intent, string> = {
+  billing: 'Billing',
+  plan_change: 'Plan change',
+  account: 'Account',
+  tech_triage: 'Technical support',
+  scheduling: 'Scheduling',
+  unknown: 'Unknown',
+};
+
+type Outcome = 'resolved' | 'escalated' | 'ongoing';
+
+const OUTCOME_LABEL: Record<Outcome, string> = { resolved: 'Resolved', escalated: 'Escalated', ongoing: 'Ongoing' };
+const OUTCOME_TONE: Record<Outcome, BadgeTone> = { resolved: 'success', escalated: 'danger', ongoing: 'warn' };
+
+function outcomeOf(call: CallSummary): Outcome {
+  if (call.status === 'escalated') return 'escalated';
+  if (call.status === 'ended') return 'resolved';
+  return 'ongoing';
+}
+
+function authLabel(call: CallSummary): string {
+  if (!call.identityVerified) return 'Not verified';
+  return call.verificationLevel === 'ani+kba' ? 'ANI + KBA' : 'ANI only';
+}
 
 export function CallHistoryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [calls, setCalls] = useState<EnrichedCall[]>([]);
+  const [calls, setCalls] = useState<CallSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState<EnrichedCall | null>(null);
+  const [selected, setSelected] = useState<CallSession | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
   const [search, setSearch] = useState(searchParams.get('search') ?? '');
 
-  const filters: CallFilters = {
-    intent: searchParams.get('intent') ?? undefined,
-    resolution: searchParams.get('resolution') ?? undefined,
-    escalated: (searchParams.get('escalated') as 'true' | 'false' | null) ?? undefined,
-    escalationReason: searchParams.get('escalationReason') ?? undefined,
-    search: searchParams.get('search') ?? undefined,
-  };
+  const intentFilter = searchParams.get('intent') ?? '';
+  const outcomeFilter = searchParams.get('resolution') ?? '';
+  const escalatedFilter = searchParams.get('escalated') ?? '';
+
+  function load() {
+    setLoading(true);
+    api
+      .getCalls()
+      .then((result) => setCalls(result.calls))
+      .finally(() => setLoading(false));
+  }
 
   useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    getCalls(filters).then((result) => {
-      if (!cancelled) {
-        setCalls(result);
-        setLoading(false);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+    load();
+    const interval = setInterval(load, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
-  function updateFilter(key: keyof CallFilters, value: string) {
+  function updateFilter(key: string, value: string) {
     const next = new URLSearchParams(searchParams);
     if (value) next.set(key, value);
     else next.delete(key);
@@ -62,7 +76,27 @@ export function CallHistoryPage() {
     updateFilter('search', search);
   }
 
-  const columns: TableColumn<EnrichedCall>[] = [
+  const filtered = useMemo(() => {
+    const q = (searchParams.get('search') ?? '').toLowerCase();
+    return [...calls]
+      .filter((c) => !intentFilter || c.intent === intentFilter)
+      .filter((c) => !outcomeFilter || outcomeOf(c) === outcomeFilter)
+      .filter((c) => !escalatedFilter || c.escalated === (escalatedFilter === 'true'))
+      .filter((c) => !q || c.callerName?.toLowerCase().includes(q) || c.phoneNumber.toLowerCase().includes(q) || c.id.includes(q))
+      .sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
+  }, [calls, intentFilter, outcomeFilter, escalatedFilter, searchParams]);
+
+  async function openCall(call: CallSummary) {
+    setDetailLoading(true);
+    try {
+      const { session } = await api.getCall(call.id);
+      setSelected(session);
+    } finally {
+      setDetailLoading(false);
+    }
+  }
+
+  const columns: TableColumn<CallSummary>[] = [
     {
       key: 'time',
       header: 'Started',
@@ -72,37 +106,31 @@ export function CallHistoryPage() {
     },
     { key: 'caller', header: 'Caller', render: (c) => c.callerName ?? c.phoneNumber },
     { key: 'intent', header: 'Intent', render: (c) => INTENT_LABELS[c.intent] },
+    { key: 'auth', header: 'Authentication', render: (c) => authLabel(c) },
     {
-      key: 'auth',
-      header: 'Authentication',
-      render: (c) => c.authStatus.replace('-', ' '),
+      key: 'outcome',
+      header: 'Outcome',
+      render: (c) => <Badge tone={OUTCOME_TONE[outcomeOf(c)]}>{OUTCOME_LABEL[outcomeOf(c)]}</Badge>,
     },
     {
-      key: 'resolution',
-      header: 'Resolution',
-      render: (c) => <Badge tone={RESOLUTION_TONE[c.resolution]}>{c.resolution}</Badge>,
+      key: 'escalation',
+      header: 'Escalation reason',
+      render: (c) => (c.escalated && c.escalationReason ? escalationReasonLabel(c.escalationReason) : '—'),
     },
-    { key: 'escalation', header: 'Escalation', render: (c) => (c.escalated ? c.destinationQueue ?? 'Escalated' : '—') },
     {
       key: 'duration',
       header: 'Duration',
-      render: (c) => formatSeconds(c.durationSeconds),
-      sortValue: (c) => c.durationSeconds,
+      render: (c) => (c.durationSeconds !== undefined ? formatSeconds(c.durationSeconds) : '—'),
+      sortValue: (c) => c.durationSeconds ?? -1,
     },
-    { key: 'csat', header: 'CSAT', render: (c) => (c.csat !== undefined ? `${c.csat.toFixed(1)}` : '—'), sortValue: (c) => c.csat ?? -1 },
   ];
 
   return (
     <div className="page">
       <PageHeader
         title="Call History"
-        subtitle="Search, filter and drill into every completed VoiceNexus call."
+        subtitle="Every real call handled by VoiceNexus through the Call Simulator — search, filter, and open one to see its full transcript."
         breadcrumbs={[{ label: 'Home', to: '/dashboard' }, { label: 'Call History' }]}
-        actions={
-          <Button variant="outline" leftIcon={<Download size={14} />} disabled>
-            Export
-          </Button>
-        }
       />
 
       <Card>
@@ -121,32 +149,31 @@ export function CallHistoryPage() {
           <Select
             size="sm"
             aria-label="Filter by intent"
-            value={filters.intent ?? ''}
+            value={intentFilter}
             onChange={(e) => updateFilter('intent', e.target.value)}
             options={[
               { value: '', label: 'All intents' },
-              ...(Object.keys(INTENT_LABELS) as IntentKey[]).map((key) => ({ value: key, label: INTENT_LABELS[key] })),
+              ...(Object.keys(INTENT_LABELS) as Intent[]).map((key) => ({ value: key, label: INTENT_LABELS[key] })),
             ]}
           />
 
           <Select
             size="sm"
-            aria-label="Filter by resolution"
-            value={filters.resolution ?? ''}
+            aria-label="Filter by outcome"
+            value={outcomeFilter}
             onChange={(e) => updateFilter('resolution', e.target.value)}
             options={[
-              { value: '', label: 'All resolutions' },
+              { value: '', label: 'All outcomes' },
               { value: 'resolved', label: 'Resolved' },
-              { value: 'partial', label: 'Partially resolved' },
               { value: 'escalated', label: 'Escalated' },
-              { value: 'failed', label: 'Failed' },
+              { value: 'ongoing', label: 'Ongoing' },
             ]}
           />
 
           <Select
             size="sm"
             aria-label="Filter by escalation"
-            value={filters.escalated ?? ''}
+            value={escalatedFilter}
             onChange={(e) => updateFilter('escalated', e.target.value)}
             options={[
               { value: '', label: 'Escalated: any' },
@@ -158,17 +185,21 @@ export function CallHistoryPage() {
 
         <Table
           columns={columns}
-          rows={calls}
+          rows={filtered}
           rowKey={(c) => c.id}
           loading={loading}
-          onRowClick={setSelected}
+          onRowClick={openCall}
           defaultSortKey="time"
-          emptyTitle="No calls match these filters"
-          emptyDescription="Try clearing a filter or widening your search."
+          emptyTitle={calls.length === 0 ? 'No calls yet' : 'No calls match these filters'}
+          emptyDescription={
+            calls.length === 0
+              ? 'Make a call in the Call Simulator — it will show up here.'
+              : 'Try clearing a filter or widening your search.'
+          }
         />
       </Card>
 
-      <CallDetailDrawer call={selected} onClose={() => setSelected(null)} />
+      <CallSessionDrawer session={selected} loading={detailLoading} onClose={() => setSelected(null)} />
     </div>
   );
 }

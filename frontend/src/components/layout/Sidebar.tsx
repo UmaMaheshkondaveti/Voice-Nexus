@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { PanelLeftClose, PanelLeftOpen, Radio } from 'lucide-react';
-import { NAV_GROUPS } from './navConfig';
+import { navGroupsForRole } from './navConfig';
+import { useAuth } from '../../auth/AuthContext';
 import styles from './Sidebar.module.css';
 
 export interface SidebarProps {
@@ -11,6 +12,9 @@ export interface SidebarProps {
 }
 
 export function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }: SidebarProps) {
+  const { operator } = useAuth();
+  const NAV_GROUPS = navGroupsForRole(operator?.role ?? 'agent');
+
   return (
     <>
       {mobileOpen && <div className={styles.backdrop} onClick={onCloseMobile} aria-hidden="true" />}

@@ -8,7 +8,7 @@ export const ACCOUNTS: InternalAccount[] = [
   {
     phoneNumber: '+14085550101',
     accountId: 'ACC-1001',
-    fullName: 'Eddard Stark',
+    fullName: 'Daniel Whitfield',
     planName: 'Home 300',
     planPrice: 59.99,
     balanceDue: 84.5,
@@ -24,7 +24,7 @@ export const ACCOUNTS: InternalAccount[] = [
   {
     phoneNumber: '+14085550102',
     accountId: 'ACC-1002',
-    fullName: 'Cersi Lannister',
+    fullName: 'Renee Castillo',
     planName: 'Essentials 100',
     planPrice: 39.99,
     balanceDue: 0,
@@ -40,7 +40,7 @@ export const ACCOUNTS: InternalAccount[] = [
   {
     phoneNumber: '+14085550103',
     accountId: 'ACC-1003',
-    fullName: 'Sansa Stark',
+    fullName: 'Monica Alvarez',
     planName: 'Gig 1000',
     planPrice: 89.99,
     balanceDue: 179.98,
@@ -56,7 +56,7 @@ export const ACCOUNTS: InternalAccount[] = [
   {
     phoneNumber: '+14085550104',
     accountId: 'ACC-1004',
-    fullName: 'Margaery Tyrell',
+    fullName: 'Felicia Hartman',
     planName: 'Home 500',
     planPrice: 74.99,
     balanceDue: 0,
@@ -74,7 +74,7 @@ export const ACCOUNTS: InternalAccount[] = [
   {
     phoneNumber: '+14085550105',
     accountId: 'ACC-1005',
-    fullName: 'Jon Snow',
+    fullName: 'Owen Bennett',
     planName: 'Home 300',
     planPrice: 59.99,
     balanceDue: 59.99,

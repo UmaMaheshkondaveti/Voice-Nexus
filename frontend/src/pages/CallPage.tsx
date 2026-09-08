@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { PhoneCall } from 'lucide-react';
 import type { CallSession, DemoAccountOption } from '@shared/types';
 import { api } from '../api/client';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
@@ -13,6 +15,7 @@ import { Button } from '../components/ui/Button';
 const UNKNOWN_NUMBER = '+19995550000';
 
 export function CallPage() {
+  const navigate = useNavigate();
   const [accounts, setAccounts] = useState<DemoAccountOption[]>([]);
   const [selectedPhone, setSelectedPhone] = useState('');
   const [session, setSession] = useState<CallSession | null>(null);
@@ -31,6 +34,14 @@ export function CallPage() {
   }, []);
 
   const { speak, isSupported: ttsSupported } = useSpeechSynthesis();
+  const callEndedRef = useRef(false);
+
+  // After the agent finishes talking, automatically start listening again so
+  // the exchange feels like a real phone call instead of push-to-talk.
+  function resumeListeningAfterSpeech() {
+    if (callEndedRef.current) return;
+    if (sttSupportedRef.current) startRef.current();
+  }
 
   async function handleTurn(text: string) {
     if (!sessionIdRef.current) return;
@@ -39,7 +50,8 @@ export function CallPage() {
     try {
       const { session: updated, assistantText } = await api.postTurn(sessionIdRef.current, text);
       setSession(updated);
-      speak(assistantText);
+      callEndedRef.current = updated.status === 'ended' || updated.status === 'escalated';
+      speak(assistantText, resumeListeningAfterSpeech);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong.');
     } finally {
@@ -50,16 +62,21 @@ export function CallPage() {
   const { isSupported: sttSupported, isListening, start, stop } = useSpeechRecognition({
     onFinalResult: handleTurn,
   });
+  const sttSupportedRef = useRef(sttSupported);
+  sttSupportedRef.current = sttSupported;
+  const startRef = useRef(start);
+  startRef.current = start;
 
   async function startCall() {
     setError(null);
     setIsThinking(true);
+    callEndedRef.current = false;
     try {
       const { session: newSession } = await api.startCall(selectedPhone || UNKNOWN_NUMBER);
       sessionIdRef.current = newSession.id;
       setSession(newSession);
       const greeting = newSession.transcript.find((t) => t.role === 'assistant');
-      if (greeting) speak(greeting.text);
+      if (greeting) speak(greeting.text, resumeListeningAfterSpeech);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not start the call.');
     } finally {
@@ -69,6 +86,8 @@ export function CallPage() {
 
   async function endCall() {
     if (!sessionIdRef.current) return;
+    callEndedRef.current = true;
+    stop();
     const { session: updated } = await api.endCall(sessionIdRef.current);
     setSession(updated);
   }
@@ -85,9 +104,15 @@ export function CallPage() {
     <div className="page">
       <PageHeader
         title="Call Simulator"
-        subtitle="Simulates an inbound customer-care call. Speak naturally — the agent verifies your identity, works your request, and either resolves it or transfers you to a live agent."
+        subtitle="Simulates an inbound customer-care call. Speak naturally — VoiceNexus verifies your identity, works your request, and either resolves it or transfers you to a live agent."
         breadcrumbs={[{ label: 'Home', to: '/dashboard' }, { label: 'Call Simulator' }]}
       />
+
+      <div className="banner banner--info">
+        <PhoneCall size={15} />
+        In production, customers reach VoiceNexus by calling the care line — there's no app or website for them. This
+        page simulates that phone call in the browser so you can demo the experience without a telephony line.
+      </div>
 
       {error && <div className="banner banner--error">{error}</div>}
 
@@ -117,9 +142,12 @@ export function CallPage() {
 
           <TranscriptView turns={session.transcript} />
 
-          {isEscalated && (
+          {isEscalated && session && (
             <div className="banner banner--info">
-              Transferring you to a live agent. This call now appears on the Agent Handoff page.
+              <span>Transferring you to a live agent, with everything VoiceNexus already knows about this call.</span>
+              <Button size="sm" variant="outline" onClick={() => navigate(`/agent-handoff?call=${session.id}`)}>
+                Open in Agent Workspace →
+              </Button>
             </div>
           )}
 

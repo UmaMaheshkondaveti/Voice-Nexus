@@ -1,14 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, Settings, LogOut, ChevronDown } from 'lucide-react';
-import { useToast } from '../ui/Toast';
+import { useAuth, type Role } from '../../auth/AuthContext';
+import { Badge } from '../ui/Badge';
 import styles from './TopBar.module.css';
+
+const ROLE_LABEL: Record<Role, string> = { agent: 'Agent', operations: 'Operations', admin: 'Admin' };
+
+function initials(name: string | undefined): string {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/);
+  return parts
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? '')
+    .join('');
+}
 
 export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const { push } = useToast();
+  const { operator, signOut } = useAuth();
   const now = new Date();
 
   useEffect(() => {
@@ -40,40 +52,49 @@ export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
         <button
           type="button"
           className={styles.userChip}
-          title="Signed in as Demo Operator"
+          title={`Signed in as ${operator?.name ?? 'Operator'}`}
           onClick={() => setUserMenuOpen((o) => !o)}
           aria-haspopup="menu"
           aria-expanded={userMenuOpen}
         >
-          <span className={styles.avatar}>DO</span>
-          <span className={styles.userLabel}>Demo Operator</span>
+          <span className={styles.avatar}>{initials(operator?.name)}</span>
+          <span className={styles.userLabel}>{operator?.name}</span>
+          {operator && (
+            <Badge tone="primary" className={styles.roleBadge}>
+              {ROLE_LABEL[operator.role]}
+            </Badge>
+          )}
           <ChevronDown size={14} className={styles.chevron} />
         </button>
         {userMenuOpen && (
           <div className={styles.userMenu} role="menu">
             <div className={styles.userMenuHeader}>
-              <span className={styles.userMenuName}>Demo Operator</span>
-              <span className={styles.userMenuEmail}>demo.operator@voicenexus.ai</span>
+              <span className={styles.userMenuName}>{operator?.name}</span>
+              <span className={styles.userMenuEmail}>{operator?.email}</span>
+              {operator && <Badge tone="primary">{ROLE_LABEL[operator.role]}</Badge>}
             </div>
+            {operator?.role === 'admin' && (
+              <button
+                type="button"
+                role="menuitem"
+                className={styles.userMenuItem}
+                onClick={() => {
+                  setUserMenuOpen(false);
+                  navigate('/admin/settings');
+                }}
+              >
+                <Settings size={16} />
+                Settings
+              </button>
+            )}
             <button
               type="button"
               role="menuitem"
               className={styles.userMenuItem}
               onClick={() => {
                 setUserMenuOpen(false);
-                navigate('/admin/settings');
-              }}
-            >
-              <Settings size={16} />
-              Settings
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              className={styles.userMenuItem}
-              onClick={() => {
-                setUserMenuOpen(false);
-                push({ title: 'Signed out', description: 'This is a demo session, so sign-out is simulated.', tone: 'info' });
+                signOut();
+                navigate('/login', { replace: true });
               }}
             >
               <LogOut size={16} />

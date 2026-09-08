@@ -6,14 +6,16 @@ export const TOOLS: OpenAI.Chat.ChatCompletionTool[] = [
     function: {
       name: 'verify_identity',
       description:
-        "Verify the caller's identity via ANI (their calling phone number) match, optionally strengthened with a knowledge-based answer (KBA). Call this before revealing or changing any account-specific information. Read-only account questions only need an ANI match; payments, plan changes, address changes, and cancellations need ANI + a correct KBA answer. If the phone number does not match any account, tell the caller and offer to transfer them.",
+        "Verify the caller's identity. ANI (calling-number) match happens automatically from the call itself — you never ask the caller for their own phone number, and you don't pass it here. Call this with no kbaAnswer first to get the ANI match result; read-only account questions only need that. For payments, plan changes, address changes, and cancellations, first ask the caller the kbaQuestion returned, then call this again with their kbaAnswer. If ANI does not match any account, tell the caller and offer to transfer them.",
       parameters: {
         type: 'object',
         properties: {
-          phoneNumber: { type: 'string', description: 'The phone number the caller is calling from, in E.164 format (e.g. +14085550101).' },
-          kbaAnswer: { type: 'string', description: "The caller's answer to the account's knowledge-based question, if one was asked." },
+          kbaAnswer: {
+            type: ['string', 'null'],
+            description: "The caller's answer to the account's knowledge-based question, if one was asked. Omit or use null for the initial ANI-only check.",
+          },
         },
-        required: ['phoneNumber'],
+        required: [],
       },
     },
   },

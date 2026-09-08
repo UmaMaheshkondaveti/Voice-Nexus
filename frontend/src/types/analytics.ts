@@ -166,12 +166,3 @@ export interface EnrichedCall {
   timeline: CallTimelineEvent[];
   transcriptSnippet: { speaker: 'caller' | 'assistant'; text: string }[];
 }
-
-export interface CallFilters {
-  status?: string;
-  intent?: string;
-  resolution?: string;
-  escalationReason?: string;
-  escalated?: 'true' | 'false';
-  search?: string;
-}

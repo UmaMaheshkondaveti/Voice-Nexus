@@ -1,7 +1,23 @@
 import { useState } from 'react';
 import type { Turn } from '@shared/types';
+import { formatTime } from '../utils/format';
 
-export function TranscriptView({ turns }: { turns: Turn[] }) {
+interface TranscriptViewProps {
+  turns: Turn[];
+  /** Label for role: 'caller' turns — "You" in the live call simulator, "Customer" in an agent-facing view. */
+  callerLabel?: string;
+  /** Label for role: 'assistant' turns. */
+  assistantLabel?: string;
+  /** Show a small timestamp under each speaker label. Off by default in the live call simulator; on for agent/history review views. */
+  showTimestamps?: boolean;
+}
+
+export function TranscriptView({
+  turns,
+  callerLabel = 'Customer',
+  assistantLabel = 'VoiceNexus AI',
+  showTimestamps = false,
+}: TranscriptViewProps) {
   const [showDebug, setShowDebug] = useState(false);
   const visibleTurns = turns.filter((t) => t.role !== 'system-event' || showDebug);
 
@@ -24,7 +40,13 @@ export function TranscriptView({ turns }: { turns: Turn[] }) {
                 )}
               </div>
             ) : (
-              <div className="transcript__bubble">{turn.text}</div>
+              <>
+                <div className="transcript__speaker">
+                  <span>{turn.role === 'caller' ? callerLabel : assistantLabel}</span>
+                  {showTimestamps && <span className="transcript__timestamp">{formatTime(turn.timestamp)}</span>}
+                </div>
+                <div className="transcript__bubble">{turn.text}</div>
+              </>
             )}
           </div>
         ))}

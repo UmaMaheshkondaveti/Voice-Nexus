@@ -32,7 +32,7 @@ export function ResolutionSection({ range }: { range: DateRangeValue }) {
   const slices: DonutSlice[] | null = data && [
     { key: 'resolved', label: 'Resolved', value: data.resolved, color: 'var(--color-success)' },
     { key: 'partial', label: 'Partially resolved', value: data.partial, color: 'var(--color-warn)' },
-    { key: 'escalated', label: 'Escalated', value: data.escalated, color: 'var(--chart-1)' },
+    { key: 'escalated', label: 'Escalated', value: data.escalated, color: 'var(--color-escalation)' },
     { key: 'failed', label: 'Failed', value: data.failed, color: 'var(--color-danger)' },
   ];
 

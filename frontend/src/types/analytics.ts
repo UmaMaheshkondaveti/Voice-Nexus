@@ -12,29 +12,6 @@ export const INTENT_LABELS: Record<IntentKey, string> = {
   other: 'Other',
 };
 
-export type AuthStatus = 'not-required' | 'pending' | 'verified' | 'failed';
-
-export type WorkflowStage =
-  | 'greeting'
-  | 'intent-detection'
-  | 'authentication'
-  | 'account-lookup'
-  | 'action'
-  | 'confirmation'
-  | 'wrap-up';
-
-export const WORKFLOW_STAGE_LABELS: Record<WorkflowStage, string> = {
-  greeting: 'Greeting',
-  'intent-detection': 'Intent detection',
-  authentication: 'Authentication',
-  'account-lookup': 'Account lookup',
-  action: 'Action execution',
-  confirmation: 'Confirmation',
-  'wrap-up': 'Wrap-up',
-};
-
-export type ResolutionOutcome = 'resolved' | 'partial' | 'escalated' | 'failed';
-
 export interface MetricDatum {
   value: number;
   deltaPct: number;
@@ -112,16 +89,6 @@ export interface AIPerformance {
   latencyTrend: number[];
 }
 
-export interface LiveOpsCall {
-  id: string;
-  callerLabel: string;
-  intent: IntentKey;
-  intentConfidence: number;
-  durationSeconds: number;
-  authStatus: AuthStatus;
-  workflowStage: WorkflowStage;
-}
-
 export type ServiceKey =
   | 'telephony'
   | 'stt'
@@ -138,31 +105,4 @@ export interface SystemHealthItem {
   uptimePct: number;
   latencyMs: number;
   lastIncident?: string;
-}
-
-export interface CallTimelineEvent {
-  label: string;
-  timestamp: string;
-  detail?: string;
-}
-
-export interface EnrichedCall {
-  id: string;
-  callerName?: string;
-  phoneNumber: string;
-  startedAt: string;
-  durationSeconds: number;
-  intent: IntentKey;
-  intentConfidence: number;
-  authStatus: AuthStatus;
-  status: 'connecting' | 'in-progress' | 'escalated' | 'ended';
-  resolution: ResolutionOutcome;
-  escalated: boolean;
-  escalationReason?: string;
-  destinationQueue?: string;
-  transferredToAgent: boolean;
-  csat?: number;
-  workflowStage: WorkflowStage;
-  timeline: CallTimelineEvent[];
-  transcriptSnippet: { speaker: 'caller' | 'assistant'; text: string }[];
 }

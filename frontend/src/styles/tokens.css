@@ -1,31 +1,48 @@
 /*
   VoiceNexus design tokens.
-  Palette: deep indigo/navy (telecom + AI orchestration) with a cyan "live signal" accent —
-  deliberately not the generic purple/teal chatbot look.
+  Palette: enterprise navy/slate dark theme (default) with electric-blue for
+  primary actions and cyan reserved specifically for AI/voice-intelligence
+  activity — deliberately not a generic purple/teal chatbot look.
+
+  Theme model: dark is the default VoiceNexus experience (:root). A light
+  theme is available by setting data-theme="light" on <html> (see
+  frontend/src/theme/ThemeContext.tsx) — only the "surface" tokens below
+  (background/card/border/text) actually change between themes; every brand
+  and status color is a fixed hex used identically in both, so badges/buttons/
+  charts never look "off" when the user switches.
 */
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  /* ---- Primary (brand blue-indigo) ---- */
-  --color-primary-50: #eef2fe;
-  --color-primary-100: #dce4fd;
-  --color-primary-200: #b9cafb;
-  --color-primary-300: #8fa9f6;
-  --color-primary-400: #5f82ec;
-  --color-primary-500: #3457d5;
-  --color-primary-600: #2a46b8;
-  --color-primary-700: #223795;
-  --color-primary-800: #1c2c76;
-  --color-primary-900: #16235c;
+  /* ---- Primary (Electric Blue) — fixed across themes ---- */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
 
-  /* ---- Accent (live/voice signal cyan) ---- */
+  /* ---- Accent (AI / voice-intelligence cyan) — fixed across themes.
+     Reserved specifically for AI activity, AI decisions, and real-time voice
+     events; never used as a generic secondary brand color. ---- */
   --color-accent-100: #cffafe;
+  --color-accent-200: #a5f3fc;
   --color-accent-300: #67e8f9;
+  --color-accent-400: #22d3ee;
   --color-accent-500: #06b6d4;
   --color-accent-600: #0891b2;
   --color-accent-700: #0e7490;
+  --color-accent-800: #155e75;
+  --color-accent-900: #164e63;
 
-  /* ---- Neutrals (cool slate, matches indigo hue) ---- */
+  /* ---- Neutrals (Tailwind-slate scale) — fixed across themes. Solid,
+     self-contained badge/chip pairs (bg+fg below) stay accessible regardless
+     of which theme's card surface they sit on, since the pairing never
+     depends on what's behind it. ---- */
   --color-gray-50: #f8fafc;
   --color-gray-100: #f1f5f9;
   --color-gray-200: #e2e8f0;
@@ -37,51 +54,61 @@
   --color-gray-800: #1e293b;
   --color-gray-900: #0f172a;
 
-  /* ---- Semantic ---- */
-  --color-success: #16a34a;
+  /* ---- Semantic status — fixed across themes ----
+     Success = resolved/automated-OK only. Warning = needs attention / in
+     progress. Error = genuine failures (tool/API errors, failed calls).
+     Escalation is deliberately its OWN color (orange), never reused for
+     plain errors — a call escalating to a human is an expected, healthy
+     outcome, not a failure. Information mirrors primary blue. */
+  --color-success: #22c55e;
   --color-success-bg: #dcfce7;
   --color-success-fg: #15803d;
-  --color-warn: #d97706;
+  --color-warn: #f59e0b;
   --color-warn-bg: #fef3c7;
   --color-warn-fg: #b45309;
-  --color-danger: #dc2626;
+  --color-danger: #ef4444;
   --color-danger-bg: #fee2e2;
   --color-danger-fg: #b91c1c;
-  --color-info: #3457d5;
-  --color-info-bg: #eef2fe;
-  --color-info-fg: #2a46b8;
+  --color-escalation: #f97316;
+  --color-escalation-bg: #ffedd5;
+  --color-escalation-fg: #c2410c;
+  --color-info: #3b82f6;
+  --color-info-bg: #dbeafe;
+  --color-info-fg: #1d4ed8;
 
-  /* ---- Surfaces ---- */
-  --color-bg: #f4f6fb;
-  --color-bg-subtle: #eceff5;
-  --color-surface: #ffffff;
-  --color-surface-raised: #ffffff;
-  --color-border: #e2e8f0;
-  --color-border-strong: #cbd5e1;
-  --color-text: #0f172a;
-  --color-text-muted: #64748b;
-  --color-text-faint: #94a3b8;
+  /* ---- Surfaces — THEME-DEPENDENT (dark values here; light override below) ---- */
+  --color-bg: #0b1220;
+  --color-bg-subtle: #0f1829;
+  --color-surface: #111c2e;
+  --color-surface-raised: #162338;
+  --color-border: #243247;
+  --color-border-strong: #2f4058;
+  --color-text: #f8fafc;
+  --color-text-muted: #94a3b8;
+  --color-text-faint: #64748b;
 
-  /* ---- Dark "ops panel" surfaces (live ops / system health emphasis areas) ---- */
-  --color-surface-dark: #0f1b3d;
-  --color-surface-dark-alt: #16234a;
-  --color-border-dark: rgba(255, 255, 255, 0.08);
-  --color-text-dark: #e7ecf7;
-  --color-text-dark-muted: #9aa8c7;
+  /* ---- Sidebar chrome — permanently dark navy in both themes (a fixed
+     brand element, like most enterprise contact-center consoles). ---- */
+  --color-surface-dark: #0f172a;
+  --color-surface-dark-alt: #162338;
+  --color-border-dark: rgba(248, 250, 252, 0.08);
+  --color-text-dark: #f8fafc;
+  --color-text-dark-muted: #94a3b8;
 
-  /* ---- Chart categorical palette ---- */
-  --chart-1: #3457d5;
+  /* ---- Chart categorical palette — brand-led, not rainbow: blue → cyan →
+     status colors → one muted violet for a rare 6th series → neutral → red. ---- */
+  --chart-1: #3b82f6;
   --chart-2: #06b6d4;
-  --chart-3: #8b5cf6;
+  --chart-3: #22c55e;
   --chart-4: #f59e0b;
-  --chart-5: #10b981;
-  --chart-6: #ec4899;
+  --chart-5: #f97316;
+  --chart-6: #a78bfa;
   --chart-7: #64748b;
   --chart-8: #ef4444;
 
   /* ---- Typography ---- */
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   --text-xs: 0.6875rem;
   --text-sm: 0.8125rem;
   --text-base: 0.875rem;
@@ -113,12 +140,13 @@
   --radius-xl: 20px;
   --radius-full: 999px;
 
-  /* ---- Shadows ---- */
-  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.06);
-  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
-  --shadow-lg: 0 16px 32px rgba(15, 23, 42, 0.14), 0 4px 10px rgba(15, 23, 42, 0.06);
-  --shadow-focus: 0 0 0 3px rgba(52, 87, 213, 0.35);
+  /* ---- Shadows (dark values — slightly stronger so cards still read as
+     "raised" against an already-dark page; overridden for light theme below) ---- */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.18);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.32), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.24);
+  --shadow-focus: 0 0 0 3px rgba(59, 130, 246, 0.4);
 
   /* ---- Motion ---- */
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
@@ -146,6 +174,29 @@
   --color-primary-dark: var(--color-primary-600);
   --radius: var(--radius-md);
   --shadow: var(--shadow-sm);
+}
+
+/* ---- Light theme override — opt-in via data-theme="light" on <html>.
+   Only surface/text tokens change; every brand and status color above is
+   intentionally left untouched so badges, buttons, and charts look identical
+   in both themes. ---- */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --color-bg: #f8fafc;
+  --color-bg-subtle: #eef2f7;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  --color-text-faint: #94a3b8;
+
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 16px 32px rgba(15, 23, 42, 0.14), 0 4px 10px rgba(15, 23, 42, 0.06);
 }
 
 /* Breakpoints (documented; media queries require literal values):

@@ -10,32 +10,19 @@ import { Badge, type BadgeTone } from '../components/ui/Badge';
 import { Table, type TableColumn } from '../components/ui/Table';
 import { CallSessionDrawer } from '../components/calls/CallSessionDrawer';
 import { escalationReasonLabel } from '../utils/escalation';
+import { INTENT_LABELS, authLabel } from '../utils/callDisplay';
 import { formatDateTime, formatSeconds } from '../utils/format';
 import styles from './CallHistoryPage.module.css';
-
-const INTENT_LABELS: Record<Intent, string> = {
-  billing: 'Billing',
-  plan_change: 'Plan change',
-  account: 'Account',
-  tech_triage: 'Technical support',
-  scheduling: 'Scheduling',
-  unknown: 'Unknown',
-};
 
 type Outcome = 'resolved' | 'escalated' | 'ongoing';
 
 const OUTCOME_LABEL: Record<Outcome, string> = { resolved: 'Resolved', escalated: 'Escalated', ongoing: 'Ongoing' };
-const OUTCOME_TONE: Record<Outcome, BadgeTone> = { resolved: 'success', escalated: 'danger', ongoing: 'warn' };
+const OUTCOME_TONE: Record<Outcome, BadgeTone> = { resolved: 'success', escalated: 'escalation', ongoing: 'warn' };
 
 function outcomeOf(call: CallSummary): Outcome {
   if (call.status === 'escalated') return 'escalated';
   if (call.status === 'ended') return 'resolved';
   return 'ongoing';
-}
-
-function authLabel(call: CallSummary): string {
-  if (!call.identityVerified) return 'Not verified';
-  return call.verificationLevel === 'ani+kba' ? 'ANI + KBA' : 'ANI only';
 }
 
 export function CallHistoryPage() {

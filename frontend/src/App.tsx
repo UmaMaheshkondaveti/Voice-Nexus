@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AppShell } from './components/layout/AppShell';
 import { ToastProvider } from './components/ui/Toast';
 import { AuthProvider, ROLE_HOME, useAuth } from './auth/AuthContext';
+import { ThemeProvider } from './theme/ThemeContext';
 import { isPathAllowedForRole } from './components/layout/navConfig';
 import { LoginPage } from './pages/LoginPage';
 import { CallPage } from './pages/CallPage';
@@ -46,7 +47,8 @@ function RequireAuth({ children }: { children: ReactNode }) {
 
 export function App() {
   return (
-    <AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
       <ToastProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
@@ -62,7 +64,8 @@ export function App() {
           />
         </Routes>
       </ToastProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

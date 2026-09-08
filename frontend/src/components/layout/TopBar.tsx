@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, Settings, LogOut, ChevronDown } from 'lucide-react';
+import { Menu, Settings, LogOut, ChevronDown, Sun, Moon } from 'lucide-react';
 import { useAuth, type Role } from '../../auth/AuthContext';
+import { useTheme } from '../../theme/ThemeContext';
 import { Badge } from '../ui/Badge';
 import styles from './TopBar.module.css';
 
@@ -21,6 +22,7 @@ export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { operator, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const now = new Date();
 
   useEffect(() => {
@@ -47,6 +49,16 @@ export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
           {now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
         </span>
       </div>
+
+      <button
+        type="button"
+        className={styles.themeToggle}
+        onClick={toggleTheme}
+        aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+        title={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+      >
+        {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+      </button>
 
       <div className={styles.userMenuWrap} ref={userMenuRef}>
         <button

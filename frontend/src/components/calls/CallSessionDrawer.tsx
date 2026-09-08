@@ -9,7 +9,7 @@ import styles from './CallDetailDrawer.module.css';
 const STATUS_TONE = {
   connecting: 'warn',
   'in-progress': 'info',
-  escalated: 'danger',
+  escalated: 'escalation',
   ended: 'success',
 } as const;
 
@@ -67,7 +67,7 @@ export function CallSessionDrawer({
               {session.accountId && (
                 <div>
                   <dt>Account ID</dt>
-                  <dd>{session.accountId}</dd>
+                  <dd><code>{session.accountId}</code></dd>
                 </div>
               )}
               {session.transactionsCompleted.length > 0 && (

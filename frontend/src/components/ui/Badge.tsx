@@ -1,7 +1,7 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 import styles from './Badge.module.css';
 
-export type BadgeTone = 'neutral' | 'primary' | 'success' | 'warn' | 'danger' | 'info';
+export type BadgeTone = 'neutral' | 'primary' | 'success' | 'warn' | 'danger' | 'escalation' | 'info';
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   tone?: BadgeTone;

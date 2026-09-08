@@ -1,67 +1,79 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { PhoneIncoming } from 'lucide-react';
+import type { CallSession, CallSummary } from '@shared/types';
+import { api } from '../api/client';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Table, type TableColumn } from '../components/ui/Table';
 import { EmptyState } from '../components/ui/EmptyState';
-import { CallDetailBody } from '../components/calls/CallDetailBody';
+import { TranscriptView } from '../components/TranscriptView';
 import { usePolling } from '../hooks/usePolling';
-import { getLiveOps, liveOpsCallToDetail } from '../services/analyticsService';
-import { INTENT_LABELS, WORKFLOW_STAGE_LABELS, type EnrichedCall, type LiveOpsCall } from '../types/analytics';
+import { INTENT_LABELS, authLabel } from '../utils/callDisplay';
+import { formatSeconds } from '../utils/format';
 import styles from './LiveCallsPage.module.css';
 
-const AUTH_TONE = {
-  verified: 'success',
-  pending: 'warn',
-  failed: 'danger',
-  'not-required': 'neutral',
-} as const;
+const STATUS_LABEL = { connecting: 'Connecting', 'in-progress': 'In progress' } as const;
+const STATUS_TONE = { connecting: 'warn', 'in-progress': 'info' } as const;
+
+function liveDuration(startedAt: string): string {
+  const seconds = Math.max(0, Math.floor((Date.now() - new Date(startedAt).getTime()) / 1000));
+  return formatSeconds(seconds);
+}
+
+async function fetchActiveCalls(): Promise<CallSummary[]> {
+  const { calls } = await api.getCalls();
+  return calls.filter((c) => c.status === 'connecting' || c.status === 'in-progress');
+}
 
 export function LiveCallsPage() {
-  const { data: calls, loading } = usePolling(getLiveOps, { intervalMs: 4000 });
-  const [tick, setTick] = useState(0);
+  const { data: calls, loading } = usePolling(fetchActiveCalls, { intervalMs: 3000 });
+  const [, setTick] = useState(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const lastPollRef = useRef(Date.now());
+  const [selectedSession, setSelectedSession] = useState<CallSession | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
-  useEffect(() => {
-    lastPollRef.current = Date.now();
-  }, [calls]);
-
+  // Re-render every second purely to tick the live duration column/header — no new data fetched.
   useEffect(() => {
     const id = window.setInterval(() => setTick((t) => t + 1), 1000);
     return () => window.clearInterval(id);
   }, []);
-  void tick;
 
-  function liveDuration(call: LiveOpsCall): string {
-    const elapsed = Math.floor((Date.now() - lastPollRef.current) / 1000);
-    const total = call.durationSeconds + Math.max(0, elapsed);
-    return `${Math.floor(total / 60)}m ${String(total % 60).padStart(2, '0')}s`;
-  }
+  useEffect(() => {
+    if (!selectedId) {
+      setSelectedSession(null);
+      return;
+    }
+    if (calls && !calls.some((c) => c.id === selectedId)) {
+      // The call ended or escalated since it was selected — stop showing it as "live".
+      setSelectedId(null);
+      return;
+    }
+    let cancelled = false;
+    setDetailLoading(true);
+    api
+      .getCall(selectedId)
+      .then(({ session }) => !cancelled && setSelectedSession(session))
+      .finally(() => !cancelled && setDetailLoading(false));
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId, calls]);
 
-  const selectedLiveCall = calls?.find((c) => c.id === selectedId) ?? null;
-  const selectedDetail: EnrichedCall | null = selectedLiveCall ? liveOpsCallToDetail(selectedLiveCall) : null;
-
-  const columns: TableColumn<LiveOpsCall>[] = [
-    { key: 'caller', header: 'Caller', render: (c) => c.callerLabel },
+  const columns: TableColumn<CallSummary>[] = [
+    { key: 'caller', header: 'Caller', render: (c) => c.callerName ?? c.phoneNumber },
     { key: 'intent', header: 'Intent', render: (c) => <Badge tone="primary">{INTENT_LABELS[c.intent]}</Badge> },
-    { key: 'confidence', header: 'Confidence', render: (c) => `${Math.round(c.intentConfidence * 100)}%` },
-    { key: 'duration', header: 'Duration', render: (c) => liveDuration(c) },
-    { key: 'auth', header: 'Authentication', render: (c) => <Badge tone={AUTH_TONE[c.authStatus]}>{c.authStatus.replace('-', ' ')}</Badge> },
-    { key: 'stage', header: 'Workflow', render: (c) => WORKFLOW_STAGE_LABELS[c.workflowStage] },
-    { key: 'ai', header: 'AI status', render: () => <Badge tone="success" dot>Automated</Badge> },
-    {
-      key: 'escalation',
-      header: 'Escalation risk',
-      render: (c) => (c.intentConfidence < 0.75 ? <Badge tone="warn">At risk</Badge> : <Badge tone="neutral">On track</Badge>),
-    },
+    { key: 'duration', header: 'Duration', render: (c) => liveDuration(c.startedAt) },
+    { key: 'auth', header: 'Authentication', render: (c) => authLabel(c) },
+    { key: 'status', header: 'Status', render: (c) => <Badge tone={STATUS_TONE[c.status as 'connecting' | 'in-progress']}>{STATUS_LABEL[c.status as 'connecting' | 'in-progress']}</Badge> },
   ];
 
   return (
     <div className="page">
       <PageHeader
         title="Live Calls"
-        subtitle="Every call VoiceNexus is handling right now, and exactly where it is in the flow."
+        subtitle="Real calls VoiceNexus is handling right now — start one in the Call Simulator to see it appear here."
         breadcrumbs={[{ label: 'Home', to: '/dashboard' }, { label: 'Live Calls' }]}
         actions={
           !loading && (
@@ -81,15 +93,30 @@ export function LiveCallsPage() {
             loading={loading}
             onRowClick={(c) => setSelectedId(c.id)}
             emptyTitle="No active calls right now"
-            emptyDescription="New inbound calls will appear here the moment they connect."
+            emptyDescription="Your AI agents are caught up — start a call in the Call Simulator to see it here live."
           />
         </Card>
 
         <Card title="Call inspector" padding="sm">
-          {selectedDetail ? (
-            <CallDetailBody call={selectedDetail} />
+          {detailLoading && !selectedSession ? (
+            <EmptyState icon={<PhoneIncoming size={22} />} title="Loading call…" />
+          ) : selectedSession ? (
+            <div className={styles.inspector}>
+              <div className={styles.inspectorBadges}>
+                <Badge tone={STATUS_TONE[selectedSession.status as 'connecting' | 'in-progress']}>
+                  {STATUS_LABEL[selectedSession.status as 'connecting' | 'in-progress']}
+                </Badge>
+                <Badge tone={selectedSession.identityVerified ? 'success' : 'warn'}>{authLabel(selectedSession)}</Badge>
+                <Badge tone="neutral">{INTENT_LABELS[selectedSession.intent]}</Badge>
+              </div>
+              <TranscriptView turns={selectedSession.transcript} callerLabel="Customer" assistantLabel="VoiceNexus AI" showTimestamps />
+            </div>
           ) : (
-            <EmptyState title="Select a call" description="Click any active call on the left to see its live transcript and timeline." />
+            <EmptyState
+              icon={<PhoneIncoming size={22} />}
+              title="Select a call"
+              description="Click any active call on the left to see its live transcript."
+            />
           )}
         </Card>
       </div>

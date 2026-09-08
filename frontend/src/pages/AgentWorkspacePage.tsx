@@ -154,7 +154,7 @@ export function AgentWorkspacePage() {
                   <span className={styles.queueRowTime}>{elapsedSince(call.escalation.escalatedAt)}</span>
                 </div>
                 <div className={styles.queueRowMeta}>
-                  <Badge tone="danger">{escalationReasonLabel(call.escalation.reason)}</Badge>
+                  <Badge tone="escalation">{escalationReasonLabel(call.escalation.reason)}</Badge>
                   {stateFor(call.id).accepted && <Badge tone="info">In progress</Badge>}
                 </div>
               </button>
@@ -201,7 +201,7 @@ export function AgentWorkspacePage() {
                       {selected.escalation.verifiedIdentity ? `Verified (${selected.escalation.verificationLevel})` : 'Not verified'}
                     </Badge>
                     <Badge tone="neutral">{selected.intent.replace('_', ' ')}</Badge>
-                    <Badge tone={selected.status === 'escalated' ? 'danger' : 'success'}>
+                    <Badge tone={selected.status === 'escalated' ? 'escalation' : 'success'}>
                       {selected.status === 'escalated' ? `Waiting ${elapsedSince(selected.escalation.escalatedAt)}` : 'Resolved'}
                     </Badge>
                     {selected.escalation.callbackRequested && <Badge tone="info">Callback requested</Badge>}
@@ -300,7 +300,7 @@ export function AgentWorkspacePage() {
                     </div>
                     <div>
                       <dt>Account ID</dt>
-                      <dd>{selected.escalation.accountId ?? 'Not linked'}</dd>
+                      <dd>{selected.escalation.accountId ? <code>{selected.escalation.accountId}</code> : 'Not linked'}</dd>
                     </div>
                     <div>
                       <dt>Call started</dt>

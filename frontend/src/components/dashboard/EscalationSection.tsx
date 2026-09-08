@@ -48,7 +48,7 @@ export function EscalationSection({ range }: { range: DateRangeValue }) {
             <div>
               <h3 className={styles.columnTitle}>By reason</h3>
               <HorizontalBarList
-                items={data.reasons.map((r) => ({ key: r.key, label: r.label, value: r.count, color: 'var(--color-danger)' }))}
+                items={data.reasons.map((r) => ({ key: r.key, label: r.label, value: r.count, color: 'var(--color-escalation)' }))}
                 valueFormatter={formatNumber}
                 onItemClick={(item) => navigate(`/calls?escalated=true&escalationReason=${item.key}`)}
               />

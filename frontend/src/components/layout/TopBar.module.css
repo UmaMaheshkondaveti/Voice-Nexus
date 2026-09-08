@@ -22,7 +22,7 @@
 
 .hamburger:hover:not(:disabled) {
   background: var(--color-gray-100);
-  color: var(--color-text);
+  color: var(--color-gray-700);
 }
 
 .spacer {
@@ -54,6 +54,23 @@
   }
 }
 
+.themeToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: transparent;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.themeToggle:hover:not(:disabled) {
+  background: var(--color-bg-subtle);
+  color: var(--color-text);
+}
+
 .userMenuWrap {
   position: relative;
 }
@@ -70,10 +87,15 @@
 
 .userChip:hover:not(:disabled) {
   background: var(--color-gray-100);
+  color: var(--color-gray-700);
 }
 
 .chevron {
   color: var(--color-text-muted);
+}
+
+.userChip:hover:not(:disabled) .chevron {
+  color: var(--color-gray-600);
 }
 
 .userMenu {
@@ -124,6 +146,7 @@
 
 .userMenuItem:hover:not(:disabled) {
   background: var(--color-gray-100);
+  color: var(--color-gray-700);
 }
 
 .avatar {

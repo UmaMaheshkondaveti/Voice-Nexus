@@ -1,61 +1,71 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { CallSession, CallSummary } from '@shared/types';
+import { api } from '../../api/client';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Table, type TableColumn } from '../ui/Table';
-import { CallDetailDrawer } from '../calls/CallDetailDrawer';
+import { CallSessionDrawer } from '../calls/CallSessionDrawer';
 import { usePolling } from '../../hooks/usePolling';
-import { getLiveOps, liveOpsCallToDetail } from '../../services/analyticsService';
-import { INTENT_LABELS, WORKFLOW_STAGE_LABELS, type EnrichedCall, type LiveOpsCall } from '../../types/analytics';
+import { INTENT_LABELS, authLabel } from '../../utils/callDisplay';
+import { formatSeconds } from '../../utils/format';
 
-const AUTH_TONE = {
-  verified: 'success',
-  pending: 'warn',
-  failed: 'danger',
-  'not-required': 'neutral',
-} as const;
+const STATUS_LABEL = { connecting: 'Connecting', 'in-progress': 'In progress' } as const;
+const STATUS_TONE = { connecting: 'warn', 'in-progress': 'info' } as const;
+
+function liveDuration(startedAt: string): string {
+  const seconds = Math.max(0, Math.floor((Date.now() - new Date(startedAt).getTime()) / 1000));
+  return formatSeconds(seconds);
+}
+
+async function fetchActiveCalls(): Promise<CallSummary[]> {
+  const { calls } = await api.getCalls();
+  return calls.filter((c) => c.status === 'connecting' || c.status === 'in-progress');
+}
 
 export function LiveOpsSection() {
-  const { data: calls, loading } = usePolling(getLiveOps, { intervalMs: 4000 });
-  const [tick, setTick] = useState(0);
-  const [selected, setSelected] = useState<EnrichedCall | null>(null);
-  const lastPollRef = useRef(Date.now());
-
-  useEffect(() => {
-    lastPollRef.current = Date.now();
-  }, [calls]);
+  const { data: calls, loading } = usePolling(fetchActiveCalls, { intervalMs: 4000 });
+  const [, setTick] = useState(0);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedSession, setSelectedSession] = useState<CallSession | null>(null);
 
   useEffect(() => {
     const id = window.setInterval(() => setTick((t) => t + 1), 1000);
     return () => window.clearInterval(id);
   }, []);
 
-  function liveDuration(call: LiveOpsCall): string {
-    const elapsed = Math.floor((Date.now() - lastPollRef.current) / 1000);
-    const total = call.durationSeconds + Math.max(0, elapsed);
-    const mins = Math.floor(total / 60);
-    const secs = total % 60;
-    return `${mins}m ${String(secs).padStart(2, '0')}s`;
-  }
-  void tick;
+  useEffect(() => {
+    if (!selectedId) {
+      setSelectedSession(null);
+      return;
+    }
+    let cancelled = false;
+    api.getCall(selectedId).then(({ session }) => !cancelled && setSelectedSession(session));
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedId]);
 
-  const columns: TableColumn<LiveOpsCall>[] = [
-    { key: 'caller', header: 'Caller', render: (c) => c.callerLabel },
+  const columns: TableColumn<CallSummary>[] = [
+    { key: 'caller', header: 'Caller', render: (c) => c.callerName ?? c.phoneNumber },
     { key: 'intent', header: 'Intent', render: (c) => <Badge tone="primary">{INTENT_LABELS[c.intent]}</Badge> },
-    { key: 'confidence', header: 'Confidence', render: (c) => `${Math.round(c.intentConfidence * 100)}%` },
-    { key: 'duration', header: 'Duration', render: (c) => liveDuration(c) },
+    { key: 'duration', header: 'Duration', render: (c) => liveDuration(c.startedAt) },
+    { key: 'auth', header: 'Authentication', render: (c) => authLabel(c) },
     {
-      key: 'auth',
-      header: 'Authentication',
-      render: (c) => <Badge tone={AUTH_TONE[c.authStatus]}>{c.authStatus.replace('-', ' ')}</Badge>,
+      key: 'status',
+      header: 'Status',
+      render: (c) => (
+        <Badge tone={STATUS_TONE[c.status as 'connecting' | 'in-progress']}>
+          {STATUS_LABEL[c.status as 'connecting' | 'in-progress']}
+        </Badge>
+      ),
     },
-    { key: 'stage', header: 'Workflow stage', render: (c) => WORKFLOW_STAGE_LABELS[c.workflowStage] },
   ];
 
   return (
     <Card
       id="live-ops"
       title="Live operations"
-      subtitle="Calls currently in progress across VoiceNexus"
+      subtitle="Real calls currently in progress across VoiceNexus"
       actions={
         !loading && (
           <Badge tone="success" dot>
@@ -69,11 +79,11 @@ export function LiveOpsSection() {
         rows={calls ?? []}
         rowKey={(c) => c.id}
         loading={loading}
-        onRowClick={(c) => setSelected(liveOpsCallToDetail(c))}
+        onRowClick={(c) => setSelectedId(c.id)}
         emptyTitle="No active calls right now"
-        emptyDescription="New inbound calls will appear here the moment they connect."
+        emptyDescription="Start a call in the Call Simulator to see it here live."
       />
-      <CallDetailDrawer call={selected} onClose={() => setSelected(null)} />
+      <CallSessionDrawer session={selectedSession} loading={false} onClose={() => setSelectedId(null)} />
     </Card>
   );
 }

@@ -3,29 +3,26 @@ import type {
   AIPerformance,
   CallVolumeData,
   CallVolumePoint,
-  EnrichedCall,
   EscalationAnalytics,
   IntentBreakdownItem,
   IntentKey,
-  LiveOpsCall,
   MetricDatum,
   OverviewMetrics,
   ResolutionBreakdown,
   SystemHealthItem,
-  WorkflowStage,
-  AuthStatus,
 } from '../types/analytics';
 import { INTENT_LABELS } from '../types/analytics';
 
 /*
  * Mock analytics layer.
  *
- * VoiceNexus's real backend does not yet expose contact-center analytics
- * endpoints — only /api/metrics, /api/calls and /api/escalations (basic,
- * single-tenant counts). Every function below is the single source of demo
- * data for the Dashboard, Call History and related drill-downs, deterministic
- * per date-range so the UI doesn't flicker between renders, but still
- * "live enough" (getLiveOps) to feel like a running system.
+ * VoiceNexus's real backend does not yet expose contact-center trend/aggregate
+ * analytics endpoints — only /api/metrics, /api/calls and /api/escalations
+ * (real, single-tenant data — Live Calls, Call History, and the Agent
+ * Workspace all use those directly, not this file). Every function below is
+ * illustrative demo data for the Dashboard's trend charts and the deeper
+ * Analytics pages, deterministic per date-range so the UI doesn't flicker
+ * between renders.
  *
  * Swap point for real integration: replace each function body with a fetch
  * against a future `/api/analytics/*` endpoint that returns the same shape.
@@ -291,124 +288,6 @@ export async function getSystemEvents(): Promise<SystemEvent[]> {
   return SYSTEM_EVENTS;
 }
 
-const CALLER_NAMES = [
-  'Maria Chen', 'James Patel', 'Aisha Khan', 'Robert Diaz', 'Emily Novak', 'Daniel Osei',
-  'Sofia Rossi', 'Liam Murphy', 'Grace Kim', 'Noah Fischer', 'Olivia Santos', 'Ethan Brooks',
-];
-
-const WORKFLOW_STAGES: WorkflowStage[] = ['greeting', 'intent-detection', 'authentication', 'account-lookup', 'action', 'confirmation', 'wrap-up'];
-const AUTH_STATUSES: AuthStatus[] = ['verified', 'verified', 'verified', 'pending', 'failed', 'not-required'];
-
-let liveCallIdSeq = 0;
-
-function spawnLiveCall(): LiveOpsCall {
-  const rng = Math.random;
-  return {
-    id: `live-${liveCallIdSeq++}`,
-    callerLabel: CALLER_NAMES[Math.floor(rng() * CALLER_NAMES.length)],
-    intent: INTENT_KEYS[Math.floor(rng() * INTENT_KEYS.length)],
-    intentConfidence: Math.round((0.7 + rng() * 0.29) * 100) / 100,
-    durationSeconds: Math.floor(rng() * 15),
-    authStatus: AUTH_STATUSES[Math.floor(rng() * AUTH_STATUSES.length)],
-    workflowStage: WORKFLOW_STAGES[0],
-  };
-}
-
-let liveCalls: LiveOpsCall[] | null = null;
-
-/**
- * Persistent, evolving mock "active calls" pool — each call keeps its identity
- * across polls (duration ticks up, workflow stage advances) instead of being
- * regenerated from scratch, so selecting a call in the UI doesn't lose it a
- * few seconds later. A call occasionally completes and is replaced by a new one.
- */
-export async function getLiveOps(): Promise<LiveOpsCall[]> {
-  await delay(150);
-  const rng = Math.random;
-
-  if (!liveCalls) {
-    liveCalls = Array.from({ length: 3 + Math.floor(rng() * 4) }, () => spawnLiveCall());
-  }
-
-  liveCalls = liveCalls
-    .map((call) => {
-      const advanced = { ...call, durationSeconds: call.durationSeconds + 4 };
-      const stageIdx = WORKFLOW_STAGES.indexOf(call.workflowStage);
-      if (stageIdx < WORKFLOW_STAGES.length - 1 && rng() < 0.35) {
-        advanced.workflowStage = WORKFLOW_STAGES[stageIdx + 1];
-      }
-      if (call.authStatus === 'pending' && rng() < 0.5) {
-        advanced.authStatus = rng() < 0.85 ? 'verified' : 'failed';
-      }
-      return advanced;
-    })
-    .filter((call) => !(call.workflowStage === 'wrap-up' && rng() < 0.25));
-
-  if (liveCalls.length < 3 || rng() < 0.15) {
-    liveCalls = [...liveCalls, spawnLiveCall()];
-  }
-  if (liveCalls.length > 8) {
-    liveCalls = liveCalls.slice(-8);
-  }
-
-  return liveCalls;
-}
-
-const ESCALATION_REASON_TEMPLATES: Record<string, string> = {
-  'low-intent-confidence': 'Low intent confidence',
-  'authentication-failure': 'Authentication failure',
-  'unsupported-request': 'Unsupported request',
-  'backend-api-failure': 'Backend/API failure',
-  'workflow-failure': 'Workflow failure',
-  'customer-requested-agent': 'Customer requested agent',
-};
-
-function buildTimeline(rng: () => number, call: Omit<EnrichedCall, 'timeline' | 'transcriptSnippet'>) {
-  const start = new Date(call.startedAt).getTime();
-  const events: EnrichedCall['timeline'] = [
-    { label: 'Call started', timestamp: new Date(start).toISOString() },
-    { label: 'Intent detected', timestamp: new Date(start + 4000).toISOString(), detail: INTENT_LABELS[call.intent] },
-  ];
-  if (call.authStatus !== 'not-required') {
-    events.push({
-      label: 'Identity verified',
-      timestamp: new Date(start + 18000).toISOString(),
-      detail: call.authStatus === 'verified' ? 'ANI + KBA passed' : call.authStatus === 'failed' ? 'Verification failed' : 'In progress',
-    });
-  }
-  events.push({ label: 'Account retrieved', timestamp: new Date(start + 24000).toISOString() });
-  events.push({ label: 'Workflow started', timestamp: new Date(start + 30000).toISOString(), detail: INTENT_LABELS[call.intent] });
-  events.push({ label: 'Action executed', timestamp: new Date(start + 60000).toISOString() });
-  if (call.escalated) {
-    events.push({
-      label: 'Escalated to agent',
-      timestamp: new Date(start + call.durationSeconds * 1000).toISOString(),
-      detail: call.escalationReason ? ESCALATION_REASON_TEMPLATES[call.escalationReason] ?? call.escalationReason : undefined,
-    });
-  } else {
-    events.push({ label: 'Resolved', timestamp: new Date(start + call.durationSeconds * 1000).toISOString() });
-  }
-  return events;
-}
-
-function buildTranscript(intent: IntentKey): EnrichedCall['transcriptSnippet'] {
-  const openers: Record<IntentKey, string> = {
-    billing: 'I was charged twice on my last bill.',
-    account: 'I need to update my service address.',
-    plan: 'I want to see if there is a cheaper plan available.',
-    outage: 'My internet has stopped working since this morning.',
-    tech_support: 'My router keeps disconnecting every few minutes.',
-    scheduling: 'I need to schedule a technician visit.',
-    other: 'I have a question about my account.',
-  };
-  return [
-    { speaker: 'caller', text: openers[intent] },
-    { speaker: 'assistant', text: 'I can help with that — first let me verify your identity.' },
-    { speaker: 'caller', text: 'Sure, go ahead.' },
-    { speaker: 'assistant', text: 'Thanks, you are verified. Let me take a look at your account now.' },
-  ];
-}
-
 export interface CustomerExperienceData {
   csat: MetricDatum;
   resolutionRate: MetricDatum;
@@ -454,26 +333,4 @@ export async function getCostPerformance(range: DateRangeValue): Promise<CostPer
     estimatedSavings: metric(rng, 3400 * sf * 4.35, 0.1),
     transferVolumeTrend: trendSeries(rng, 610 * sf, 12, 0.2).map((v, i) => ({ period: `P${i + 1}`, transfers: Math.round(v) })),
   };
-}
-
-/** Builds a drawer-ready detail record for a Live Operations row (an in-progress call, not yet in the completed call pool). */
-export function liveOpsCallToDetail(call: LiveOpsCall): EnrichedCall {
-  const rng = mulberry32(hashString(call.id));
-  const startedAt = new Date(Date.now() - call.durationSeconds * 1000).toISOString();
-  const base: Omit<EnrichedCall, 'timeline' | 'transcriptSnippet'> = {
-    id: call.id,
-    callerName: call.callerLabel,
-    phoneNumber: '—',
-    startedAt,
-    durationSeconds: call.durationSeconds,
-    intent: call.intent,
-    intentConfidence: call.intentConfidence,
-    authStatus: call.authStatus,
-    status: 'in-progress',
-    resolution: 'partial',
-    escalated: false,
-    transferredToAgent: false,
-    workflowStage: call.workflowStage,
-  };
-  return { ...base, timeline: buildTimeline(rng, base), transcriptSnippet: buildTranscript(call.intent) };
 }

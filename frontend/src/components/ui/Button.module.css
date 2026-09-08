@@ -99,7 +99,7 @@
 
 .ghost:hover:not(:disabled) {
   background: var(--color-gray-100);
-  color: var(--color-text);
+  color: var(--color-gray-700);
 }
 
 .danger {

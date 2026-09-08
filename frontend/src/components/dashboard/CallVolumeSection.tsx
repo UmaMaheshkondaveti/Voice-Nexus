@@ -57,7 +57,7 @@ export function CallVolumeSection({ range }: { range: DateRangeValue }) {
             series={[
               { key: 'total', label: 'Total', color: 'var(--chart-7)' },
               { key: 'automated', label: 'Automated', color: 'var(--chart-1)' },
-              { key: 'escalated', label: 'Escalated', color: 'var(--chart-8)' },
+              { key: 'escalated', label: 'Escalated', color: 'var(--color-escalation)' },
             ]}
           />
         </>

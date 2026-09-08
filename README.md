@@ -47,7 +47,7 @@ Open `http://localhost:5173` in Chrome or Edge.
 
 ## Try it — golden path
 
-1. **Call page** (`/`) — pick a demo account (e.g. Priya Nair) from the dropdown → **Start Call**. The greeting plays out loud.
+1. **Call page** (`/`) — pick a demo account (e.g. Daniel Whitfield) from the dropdown → **Start Call**. The greeting plays out loud.
 2. Say (or type) *"I want to check my bill."* The agent verifies your identity from the calling number automatically and states your real balance from the mock account data.
 3. Say *"I'd like to pay it in full."* Since payment is irreversible, the agent asks a knowledge-based question — answer it (see the fixture table below), confirm the amount when asked, and the payment completes. Toggle **Show technical detail** in the transcript to see the tool calls and mock-data mutations.
 4. End the call. Check the **Dashboard** (`/dashboard`) — total calls, containment rate, AHT, and intent distribution should update.
@@ -56,7 +56,7 @@ Open `http://localhost:5173` in Chrome or Edge.
 
 1. Start a call as **Unknown number**.
 2. Say *"I want to talk to a human about a legal dispute."* The agent transfers the call.
-3. Open **Agent Handoff** (`/agent-handoff`) — the call appears with its verified-identity status, intent, reason, and attempted steps.
+3. Open **Agent Workspace** (`/agent-handoff`) — the call appears with its verified-identity status, intent, reason, and attempted steps.
 4. Dashboard transfer rate and escalation reasons reflect it.
 
 ## Demo account fixtures

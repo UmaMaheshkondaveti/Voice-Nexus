@@ -1,4 +1,5 @@
 import type { InternalCallSession } from '../store/callStore.js';
+import type { EscalationPayload } from '../../../shared/types.js';
 import { findAccountByPhone, findAccountById, toPublicAccount } from '../data/accounts.js';
 import { PLAN_CATALOG, findPlanByName } from '../data/plans.js';
 import { getAvailableWindows, findWindowById } from '../data/scheduling.js';
@@ -181,12 +182,19 @@ function completeTransaction(input: Record<string, unknown>, session: InternalCa
   }
 }
 
+const URGENCY_LEVELS = new Set(['low', 'medium', 'high']);
+
 function escalate(input: Record<string, unknown>, session: InternalCallSession): ToolResult {
   session.status = 'escalated';
   session.endedAt = new Date().toISOString();
   session.escalation = {
     reason: String(input.reason ?? 'unspecified'),
     summary: String(input.summary ?? ''),
+    customerIssue: String(input.customerIssue ?? ''),
+    desiredOutcome: String(input.desiredOutcome ?? ''),
+    keyFacts: Array.isArray(input.keyFacts) ? input.keyFacts.map(String) : [],
+    urgency: URGENCY_LEVELS.has(String(input.urgency)) ? (input.urgency as EscalationPayload['urgency']) : 'medium',
+    recommendedNextAction: String(input.recommendedNextAction ?? ''),
     attemptedSteps: Array.isArray(input.attemptedSteps) ? input.attemptedSteps.map(String) : [],
     verifiedIdentity: session.identityVerified,
     verificationLevel: session.verificationLevel,

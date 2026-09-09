@@ -4,6 +4,7 @@ import {
   PhoneCall,
   History,
   ArrowUpRight,
+  PhoneForwarded,
   Brain,
   GitBranch,
   FlaskConical,
@@ -58,7 +59,8 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: 'Live Calls', path: '/live-calls', icon: Activity, implemented: true, roles: ALL_ROLES },
       { label: 'Call History', path: '/calls', icon: History, implemented: true, roles: ALL_ROLES },
-      { label: 'Agent Workspace', path: '/agent-handoff', icon: ArrowUpRight, implemented: true, roles: ALL_ROLES },
+      { label: 'Escalations', path: '/escalations', icon: ArrowUpRight, implemented: true, roles: ALL_ROLES },
+      { label: 'Agent Workspace', path: '/agent-handoff', icon: PhoneForwarded, implemented: true, roles: ALL_ROLES },
     ],
   },
   {

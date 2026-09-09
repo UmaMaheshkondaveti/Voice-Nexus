@@ -26,6 +26,11 @@ function autoEscalate(session: InternalCallSession, reason: string, summary: str
   session.escalation = {
     reason,
     summary,
+    customerIssue: session.intent !== 'unknown' ? `Caller contacted support about a ${session.intent.replace('_', ' ')} matter.` : 'Unable to determine the caller\'s issue before the system error interrupted the call.',
+    desiredOutcome: 'Unknown — the call was auto-escalated by the system before this could be established. Ask the caller directly.',
+    keyFacts: [],
+    urgency: 'high',
+    recommendedNextAction: 'Call the customer back and pick up the conversation from the transcript below — a system error cut the AI off before it could finish.',
     attemptedSteps: session.transactionsCompleted,
     verifiedIdentity: session.identityVerified,
     verificationLevel: session.verificationLevel,

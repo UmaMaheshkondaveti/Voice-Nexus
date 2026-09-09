@@ -2,7 +2,7 @@ import type { CallSession } from '@shared/types';
 import { Drawer } from '../ui/Drawer';
 import { Badge } from '../ui/Badge';
 import { TranscriptView } from '../TranscriptView';
-import { escalationReasonLabel, recommendedNextAction } from '../../utils/escalation';
+import { escalationReasonLabel, fallbackRecommendedAction, urgencyLabel, urgencyBadgeTone } from '../../utils/escalation';
 import { formatDateTime, formatSeconds } from '../../utils/format';
 import styles from './CallDetailDrawer.module.css';
 
@@ -88,11 +88,37 @@ export function CallSessionDrawer({
                   <dd>{escalationReasonLabel(session.escalation.reason)}</dd>
                 </div>
                 <div>
+                  <dt>Urgency</dt>
+                  <dd><Badge tone={urgencyBadgeTone(session.escalation.urgency)}>{urgencyLabel(session.escalation.urgency)}</Badge></dd>
+                </div>
+                {session.escalation.customerIssue && (
+                  <div>
+                    <dt>Customer's issue</dt>
+                    <dd>{session.escalation.customerIssue}</dd>
+                  </div>
+                )}
+                {session.escalation.desiredOutcome && (
+                  <div>
+                    <dt>Desired outcome</dt>
+                    <dd>{session.escalation.desiredOutcome}</dd>
+                  </div>
+                )}
+                <div>
                   <dt>Recommended next action</dt>
-                  <dd>{recommendedNextAction(session.escalation.reason)}</dd>
+                  <dd>{session.escalation.recommendedNextAction || fallbackRecommendedAction(session.escalation.reason)}</dd>
                 </div>
               </dl>
               <p>{session.escalation.summary}</p>
+              {session.escalation.keyFacts.length > 0 && (
+                <>
+                  <h4 className={styles.sectionTitle}>Key facts</h4>
+                  <ul>
+                    {session.escalation.keyFacts.map((fact, i) => (
+                      <li key={i}>{fact}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
               {session.agentNotes && (
                 <>
                   <h4 className={styles.sectionTitle}>Agent notes</h4>

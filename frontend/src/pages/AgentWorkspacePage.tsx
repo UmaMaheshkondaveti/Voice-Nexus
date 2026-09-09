@@ -20,7 +20,7 @@ import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { EmptyState } from '../components/ui/EmptyState';
 import { TranscriptView } from '../components/TranscriptView';
-import { escalationReasonLabel, recommendedNextAction } from '../utils/escalation';
+import { escalationReasonLabel, fallbackRecommendedAction, urgencyLabel, urgencyBadgeTone } from '../utils/escalation';
 import { formatDateTime, formatSeconds } from '../utils/format';
 import styles from './AgentWorkspacePage.module.css';
 
@@ -201,6 +201,7 @@ export function AgentWorkspacePage() {
                       {selected.escalation.verifiedIdentity ? `Verified (${selected.escalation.verificationLevel})` : 'Not verified'}
                     </Badge>
                     <Badge tone="neutral">{selected.intent.replace('_', ' ')}</Badge>
+                    <Badge tone={urgencyBadgeTone(selected.escalation.urgency)}>{urgencyLabel(selected.escalation.urgency)}</Badge>
                     <Badge tone={selected.status === 'escalated' ? 'escalation' : 'success'}>
                       {selected.status === 'escalated' ? `Waiting ${elapsedSince(selected.escalation.escalatedAt)}` : 'Resolved'}
                     </Badge>
@@ -271,11 +272,36 @@ export function AgentWorkspacePage() {
                       <dt>Escalation reason</dt>
                       <dd>{escalationReasonLabel(selected.escalation.reason)}</dd>
                     </div>
+                    {selected.escalation.customerIssue && (
+                      <div>
+                        <dt>Customer's issue</dt>
+                        <dd>{selected.escalation.customerIssue}</dd>
+                      </div>
+                    )}
+                    {selected.escalation.desiredOutcome && (
+                      <div>
+                        <dt>Desired outcome</dt>
+                        <dd>{selected.escalation.desiredOutcome}</dd>
+                      </div>
+                    )}
                     <div>
                       <dt>Recommended next action</dt>
-                      <dd>{recommendedNextAction(selected.escalation.reason)}</dd>
+                      <dd>{selected.escalation.recommendedNextAction || fallbackRecommendedAction(selected.escalation.reason)}</dd>
                     </div>
                   </dl>
+                </div>
+
+                <div className={styles.card}>
+                  <h4>Key facts already established</h4>
+                  {selected.escalation.keyFacts.length === 0 ? (
+                    <p className={styles.muted}>No specific facts were captured before the transfer.</p>
+                  ) : (
+                    <ul className={styles.stepList}>
+                      {selected.escalation.keyFacts.map((fact, i) => (
+                        <li key={i}>{fact}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
 
                 <div className={styles.card}>

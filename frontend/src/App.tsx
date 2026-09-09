@@ -9,6 +9,7 @@ import { LoginPage } from './pages/LoginPage';
 import { CallPage } from './pages/CallPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { AgentWorkspacePage } from './pages/AgentWorkspacePage';
+import { EscalationsPage } from './pages/EscalationsPage';
 import { CallHistoryPage } from './pages/CallHistoryPage';
 import { LiveCallsPage } from './pages/LiveCallsPage';
 import { IntentsPage } from './pages/IntentsPage';
@@ -77,6 +78,7 @@ function AppRoutes() {
       <Route path="/" element={<CallPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/calls" element={<CallHistoryPage />} />
+      <Route path="/escalations" element={<EscalationsPage />} />
       <Route path="/agent-handoff" element={<AgentWorkspacePage />} />
       <Route path="/live-calls" element={<LiveCallsPage />} />
       <Route path="/intents" element={<IntentsPage />} />

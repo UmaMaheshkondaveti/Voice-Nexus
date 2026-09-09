@@ -81,11 +81,28 @@ export const TOOLS: OpenAI.Chat.ChatCompletionTool[] = [
         type: 'object',
         properties: {
           reason: { type: 'string', description: 'A short machine-readable reason code, e.g. out_of_scope, caller_requested_human, kba_failed_twice, fraud_dispute, tool_error.' },
-          summary: { type: 'string', description: 'One or two sentences a live agent can read in 5 seconds.' },
+          summary: { type: 'string', description: 'One or two sentences a live agent can read in 5 seconds — the overall situation.' },
+          customerIssue: { type: 'string', description: "What the customer is actually trying to accomplish, in their own words/terms — one sentence." },
+          desiredOutcome: { type: 'string', description: 'The resolution the customer wants to walk away with — one sentence.' },
+          keyFacts: {
+            type: 'array',
+            items: { type: 'string' },
+            description:
+              'Concrete facts already established on this call that the human agent should not have to re-ask for: amounts, dates, ticket/order numbers, plan names, addresses, or anything else stated by the caller or returned by a tool. Empty array if none.',
+          },
+          urgency: {
+            type: 'string',
+            enum: ['low', 'medium', 'high'],
+            description: 'How urgently a human needs to pick this up — high for anything time-sensitive, upset callers, fraud/legal/service-down issues.',
+          },
+          recommendedNextAction: {
+            type: 'string',
+            description: 'One concrete sentence telling the human agent what to do first, specific to this call — not a generic instruction.',
+          },
           attemptedSteps: { type: 'array', items: { type: 'string' }, description: 'What was already tried or established on this call.' },
           callbackRequested: { type: 'boolean', description: 'Whether the caller asked for a callback instead of waiting.' },
         },
-        required: ['reason', 'summary', 'attemptedSteps'],
+        required: ['reason', 'summary', 'customerIssue', 'desiredOutcome', 'keyFacts', 'urgency', 'recommendedNextAction', 'attemptedSteps'],
       },
     },
   },

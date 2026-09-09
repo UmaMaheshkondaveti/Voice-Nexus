@@ -8,6 +8,7 @@ const REASON_LABELS: Record<string, string> = {
   orchestrator_iteration_limit: 'AI could not resolve within its step budget',
 };
 
+/** Used only when an escalation has no AI-generated recommendedNextAction (e.g. data from before this field existed). */
 const RECOMMENDED_ACTIONS: Record<string, string> = {
   out_of_scope: 'Handle directly — the request falls outside the AI’s five supported intents.',
   caller_requested_human: 'Continue the conversation live; no special handling needed beyond what the caller asked for.',
@@ -28,6 +29,18 @@ export function escalationReasonLabel(reason: string): string {
   return REASON_LABELS[reason] ?? humanize(reason);
 }
 
-export function recommendedNextAction(reason: string): string {
+export function fallbackRecommendedAction(reason: string): string {
   return RECOMMENDED_ACTIONS[reason] ?? 'Review the AI summary and transcript below, then continue from where it left off.';
+}
+
+const URGENCY_LABELS: Record<string, string> = { low: 'Low urgency', medium: 'Medium urgency', high: 'High urgency' };
+
+export function urgencyLabel(urgency: string): string {
+  return URGENCY_LABELS[urgency] ?? 'Urgency unknown';
+}
+
+export function urgencyBadgeTone(urgency: string): 'danger' | 'warn' | 'neutral' {
+  if (urgency === 'high') return 'danger';
+  if (urgency === 'medium') return 'warn';
+  return 'neutral';
 }

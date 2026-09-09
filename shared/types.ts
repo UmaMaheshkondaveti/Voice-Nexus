@@ -51,9 +51,20 @@ export interface Turn {
   toolCall?: ToolCallDebug;
 }
 
+export type EscalationUrgency = 'low' | 'medium' | 'high';
+
 export interface EscalationPayload {
   reason: string;
   summary: string;
+  /** What the customer is actually trying to accomplish, in their own terms. */
+  customerIssue: string;
+  /** What resolution the customer wants to walk away with. */
+  desiredOutcome: string;
+  /** Concrete facts surfaced in the call a human agent shouldn't have to re-ask for (order/ticket numbers, amounts, dates, names, etc.). */
+  keyFacts: string[];
+  urgency: EscalationUrgency;
+  /** AI-generated suggestion for what the human agent should do next, specific to this call. */
+  recommendedNextAction: string;
   attemptedSteps: string[];
   verifiedIdentity: boolean;
   verificationLevel: VerificationLevel;
